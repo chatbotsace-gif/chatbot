@@ -49,7 +49,8 @@ body{font-family:'Segoe UI',Tahoma,sans-serif;background:linear-gradient(135deg,
   <button onclick="sendQuick('Que horas são?')">⏰ Hora</button>
   <button onclick="sendQuick('Qual a data de hoje?')">📅 Data</button>
   <button onclick="sendQuick('Me conte uma piada')">😄 Piada</button>
-  <button onclick="sendQuick('10 + 25 * 2')">🧮 Cálculo</button>
+  <button onclick="sendQuick('10+25*2')">🧮 Cálculo</button>
+  <button onclick="sendQuick('Qual a temperatura em São Paulo?')">🌡️ Clima</button>
 </div>
 
 <div id="messages" class="messages"></div>
@@ -67,7 +68,7 @@ const sendBtn = document.getElementById('sendBtn');
 const micBtn = document.getElementById('micBtn');
 let userName = null;
 
-// Função para mensagens
+// Adiciona mensagem
 function addMessage(text, who='bot'){
   const wrap = document.createElement('div');
   wrap.className = 'msg-wrapper '+who;
@@ -87,7 +88,7 @@ function addMessage(text, who='bot'){
 // Botões rápidos
 function sendQuick(text){
   addMessage(text,'me');
-  setTimeout(()=>botRespond(text),'300');
+  setTimeout(()=>botRespond(text), 300);
 }
 
 // Fala do bot
@@ -110,10 +111,10 @@ micBtn.addEventListener('click', ()=>{
   rec.start();
 });
 
-// Função de cálculo avançado
+// Cálculo avançado
 function calcExpr(expr){
   try{
-    expr = expr.replace(/\s+/g,''); // remove espaços
+    expr = expr.replace(/\s+/g,''); 
     expr = expr.replace(/√/g,'Math.sqrt');
     expr = expr.replace(/\^/g,'**');
     expr = expr.replace(/(\d+)!/g, (_,n)=>{let f=1;for(let i=1;i<=+n;i++)f*=i;return f;});
@@ -129,11 +130,26 @@ async function botRespond(msg){
   addMessage("💬 Processando...", 'bot');
   let response = '';
   msg = msg.toLowerCase().trim();
+
   if(!userName){
     userName = msg.replace(/[^a-zA-ZÀ-ÿ\s]/g,'').trim();
-    response = userName?`Prazer, ${userName}! 😊 Como posso te ajudar hoje?`:"Olá! Qual é o seu nome? 😄";
+    response = userName ? `Prazer, ${userName}! 😊 Como posso te ajudar hoje?` : "Olá! Qual é o seu nome? 😄";
   }
-  else if(/^[0-9+\-*/().√^!logln\s]+$/.test(msg)) response = calcExpr(msg);
+  else if(msg.includes("temperatura") || msg.includes("clima")){
+    const city = "São Paulo";
+    const lat = -23.5505;
+    const lon = -46.6333;
+    const api = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&temperature_unit=celsius`;
+    try{
+      const res = await fetch(api);
+      const data = await res.json();
+      const temp = data.current_weather.temperature;
+      response = `🌡️ A temperatura atual em ${city} é ${temp}°C.`;
+    } catch(err){
+      response = "❌ Não consegui obter a temperatura no momento.";
+    }
+  }
+  else if(/^[0-9+\-*/().√^!logln\s]+$/.test(msg) && !msg.includes(' ')) response = calcExpr(msg);
   else if(msg.includes('oi')||msg.includes('olá')) response = `Oi, ${userName}! 👋 Tudo bem?`;
   else if(msg.includes('hora')) response = `Agora são ${new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}.`;
   else if(msg.includes('data')) response = `Hoje é ${new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}.`;
@@ -145,7 +161,7 @@ async function botRespond(msg){
   speak(response, 'bot');
 }
 
-// Envio
+// Envio de mensagem
 function handleSend(){
   const text = input.value.trim();
   if(!text) return;
