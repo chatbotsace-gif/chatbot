@@ -47,6 +47,16 @@ body{
   font-size:13px;white-space:nowrap;cursor:pointer;
 }
 .quickActions button:hover{background:rgba(59,130,246,0.3);}
+.suggestions{
+  display:flex;gap:6px;overflow-x:auto;
+  padding:6px 12px;background:rgba(15,23,42,0.9);
+}
+.suggestions button{
+  padding:6px 12px;border:none;border-radius:16px;
+  background:rgba(16,185,129,0.2);color:#10b981;
+  font-size:13px;white-space:nowrap;cursor:pointer;
+}
+.suggestions button:hover{background:rgba(16,185,129,0.3);}
 .messages{
   flex:1;
   overflow-y:auto;
@@ -118,8 +128,15 @@ body{
   <button onclick="sendQuick('Qual a data de hoje?')">📅 Data</button>
   <button onclick="sendQuick('Me conte uma piada')">😄 Piada</button>
   <button onclick="sendQuick('10 + 25 * 2')">🧮 Cálculo</button>
-  <button onclick="sendQuick('raiz(144)')">🔢 Raiz</button>
-  <button onclick="sendQuick('5^3')">🔢 Potência</button>
+</div>
+
+<div class="suggestions">
+  <button onclick="sendQuick('raiz(16)')">√16</button>
+  <button onclick="sendQuick('raiz(144)')">√144</button>
+  <button onclick="sendQuick('5^2')">5²</button>
+  <button onclick="sendQuick('10^3')">10³</button>
+  <button onclick="sendQuick('25*4')">25×4</button>
+  <button onclick="sendQuick('100/5')">100÷5</button>
 </div>
 
 <div id="messages" class="messages"></div>
@@ -164,18 +181,11 @@ function sendQuick(text){
 function safeEval(expr){
   try {
     expr = expr.toLowerCase();
-
-    expr = expr.replace(/x/g,'*');
-    expr = expr.replace(/vezes/g,'*');
-    expr = expr.replace(/dividido por/g,'/');
-    expr = expr.replace(/mais/g,'+');
-    expr = expr.replace(/menos/g,'-');
+    expr = expr.replace(/x/g,'*').replace(/vezes/g,'*');
+    expr = expr.replace(/dividido por/g,'/').replace(/mais/g,'+').replace(/menos/g,'-');
     expr = expr.replace(/raiz\(([\d.]+)\)/g,'Math.sqrt($1)');
     expr = expr.replace(/(\d+)\^(\d+)/g,'Math.pow($1,$2)');
-
-    if(!/^[0-9+\-*/().\sMathsqrtpow]+$/.test(expr)) 
-      return "⚠️ Expressão inválida.";
-
+    if(!/^[0-9+\-*/().\sMathsqrtpow]+$/.test(expr)) return "⚠️ Expressão inválida.";
     let result = eval(expr);
     return `🧮 ${expr} = ${result}`;
   } catch {
