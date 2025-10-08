@@ -74,6 +74,7 @@ body{
   bottom:0;
   left:0;
   width:100%;
+  z-index:10;
 }
 .inputArea input{
   flex:1;
@@ -86,7 +87,7 @@ body{
   outline:none;
 }
 .inputArea button{
-  padding:12px 20px;
+  padding:12px 18px;
   border:none;
   border-radius:24px;
   background:linear-gradient(135deg,#3b82f6,#2563eb);
@@ -94,6 +95,9 @@ body{
   font-weight:600;
   font-size:14px;
   cursor:pointer;
+}
+#micBtn{
+  background:linear-gradient(135deg,#10b981,#059669);
 }
 </style>
 </head>
@@ -103,7 +107,7 @@ body{
   <div class="logo">🤖</div>
   <div class="header-title">
     <h1>Assistente Virtual</h1>
-    <p>Seu ajudante inteligente</p>
+    <p>Fala, ouve e resolve cálculos!</p>
   </div>
   <div class="status"><span class="status-dot"></span>Online</div>
 </div>
@@ -120,6 +124,7 @@ body{
 
 <div class="inputArea">
   <input id="inputMsg" placeholder="Digite aqui..." autocomplete="off">
+  <button id="micBtn">🎤</button>
   <button id="sendBtn">Enviar</button>
 </div>
 
@@ -127,6 +132,7 @@ body{
 const messagesEl=document.getElementById('messages');
 const input=document.getElementById('inputMsg');
 const sendBtn=document.getElementById('sendBtn');
+const micBtn=document.getElementById('micBtn');
 let userName=null;
 
 function addMessage(text,who='bot'){
@@ -142,10 +148,8 @@ function addMessage(text,who='bot'){
   wrap.appendChild(msg);
   messagesEl.appendChild(wrap);
   messagesEl.scrollTop=messagesEl.scrollHeight;
+  speak(text,who);
 }
-
-// manter o input visível no mobile
-window.addEventListener('resize',()=>{document.body.style.height=window.innerHeight+'px';});
 
 function sendQuick(text){
   addMessage(text,'me');
@@ -182,6 +186,39 @@ function handleSend(){
 
 sendBtn.addEventListener('click',handleSend);
 input.addEventListener('keypress',e=>{if(e.key==='Enter')handleSend();});
+
+// Ajusta layout ao abrir o teclado no mobile
+window.addEventListener('resize',()=>{
+  document.body.style.height=window.innerHeight+'px';
+  messagesEl.scrollTop=messagesEl.scrollHeight;
+});
+
+// Fala (voz)
+function speak(text,who){
+  if(who!=='bot')return;
+  const utter=new SpeechSynthesisUtterance(text);
+  utter.lang='pt-BR';
+  utter.rate=1;
+  utter.pitch=1;
+  speechSynthesis.speak(utter);
+}
+
+// Microfone (voz para texto)
+micBtn.addEventListener('click',()=>{
+  if(!('webkitSpeechRecognition' in window)){
+    alert("⚠️ Seu navegador não suporta reconhecimento de voz.");
+    return;
+  }
+  const rec=new webkitSpeechRecognition();
+  rec.lang='pt-BR';
+  rec.onresult=function(e){
+    const result=e.results[0][0].transcript;
+    input.value=result;
+    handleSend();
+  };
+  rec.start();
+});
+
 setTimeout(()=>addMessage('Olá! 👋 Seja bem-vindo(a)! Qual é o seu nome? 😊'),'500');
 </script>
 
