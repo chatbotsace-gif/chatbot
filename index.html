@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Assistente Virtual Profissional</title>
 <style>
-/* RESET E LAYOUT */
 *{margin:0;padding:0;box-sizing:border-box;}
 body{font-family:'Segoe UI',Tahoma,sans-serif;background:linear-gradient(135deg,#0f172a,#1e293b);color:#e2e8f0;display:flex;flex-direction:column;height:100vh;overflow:hidden;}
 .header{padding:16px 20px;background:linear-gradient(135deg,#1e40af,#3b82f6);display:flex;align-items:center;gap:12px;box-shadow:0 2px 8px rgba(0,0,0,0.3);}
@@ -40,7 +39,7 @@ body{font-family:'Segoe UI',Tahoma,sans-serif;background:linear-gradient(135deg,
   <div class="logo">🤖</div>
   <div class="header-title">
     <h1>Assistente Virtual</h1>
-    <p>Profissional e Inteligente</p>
+    <p>Fala, ouve e resolve cálculos!</p>
   </div>
   <div class="status"><span class="status-dot"></span>Online</div>
 </div>
@@ -114,22 +113,18 @@ micBtn.addEventListener('click', ()=>{
 // Função de cálculo avançado
 function calcExpr(expr){
   try{
-    // Raiz quadrada
+    expr = expr.replace(/\s+/g,''); // remove espaços
     expr = expr.replace(/√/g,'Math.sqrt');
     expr = expr.replace(/\^/g,'**');
-    // Fatorial
     expr = expr.replace(/(\d+)!/g, (_,n)=>{let f=1;for(let i=1;i<=+n;i++)f*=i;return f;});
-    // Log base 10
     expr = expr.replace(/log\(([^)]+)\)/g,'Math.log10($1)');
-    // ln natural
     expr = expr.replace(/ln\(([^)]+)\)/g,'Math.log($1)');
-    // Eval seguro
-    if(!/^[0-9+\-*/().\sMathsqrt**logln]+$/.test(expr)) return "⚠️ Cálculo inválido.";
+    if(!/^[0-9+\-*/().Mathsqrt**logln]+$/.test(expr)) return "⚠️ Cálculo inválido.";
     return `🧮 ${expr} = ${eval(expr)}`;
   }catch{return "❌ Erro ao calcular.";}
 }
 
-// Resposta do bot (com integração futura OpenAI)
+// Resposta do bot
 async function botRespond(msg){
   addMessage("💬 Processando...", 'bot');
   let response = '';
@@ -138,16 +133,13 @@ async function botRespond(msg){
     userName = msg.replace(/[^a-zA-ZÀ-ÿ\s]/g,'').trim();
     response = userName?`Prazer, ${userName}! 😊 Como posso te ajudar hoje?`:"Olá! Qual é o seu nome? 😄";
   }
-  else if(/^[0-9+\-*/().√^!logln]+$/.test(msg)) response = calcExpr(msg);
+  else if(/^[0-9+\-*/().√^!logln\s]+$/.test(msg)) response = calcExpr(msg);
   else if(msg.includes('oi')||msg.includes('olá')) response = `Oi, ${userName}! 👋 Tudo bem?`;
   else if(msg.includes('hora')) response = `Agora são ${new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}.`;
   else if(msg.includes('data')) response = `Hoje é ${new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}.`;
   else if(msg.includes('piada')) response = "😂 Por que o livro de matemática ficou triste? Porque ele tinha muitos problemas!";
-  else {
-    // Aqui você pode integrar API real do OpenAI
-    response = "🤖 Ainda não entendo completamente, mas posso aprender!";
-  }
-  // Substituir "Processando..."
+  else response = "🤖 Ainda não entendo completamente, mas posso aprender!";
+
   const last = messagesEl.querySelector('.msg-wrapper.bot:last-child .msg');
   if(last) last.textContent = response;
   speak(response, 'bot');
@@ -164,8 +156,6 @@ function handleSend(){
 
 sendBtn.addEventListener('click', handleSend);
 input.addEventListener('keypress', e=>{if(e.key==='Enter') handleSend();});
-
-// Ajuste mobile
 window.addEventListener('resize', ()=>{document.body.style.height=window.innerHeight+'px'; messagesEl.scrollTop = messagesEl.scrollHeight;});
 
 // Mensagem inicial
