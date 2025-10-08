@@ -3,249 +3,132 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Assistente Virtual Profissional</title>
+<title>Assistente Virtual</title>
 <style>
-* {margin:0; padding:0; box-sizing:border-box;}
-body {font-family:'Segoe UI',Tahoma,sans-serif; background:linear-gradient(135deg,#0f172a 0%,#1e293b 100%); color:#e2e8f0; display:flex; flex-direction:column; height:100vh; overflow:hidden;}
-.header {padding:16px 24px; background:linear-gradient(135deg,#1e40af 0%,#3b82f6 100%); box-shadow:0 4px 6px rgba(0,0,0,0.3); display:flex; align-items:center; gap:12px; position:relative;}
-.header::before {content:''; position:absolute; top:0; left:0; right:0; bottom:0; background:linear-gradient(90deg,rgba(255,255,255,0.1) 0%,transparent 100%); pointer-events:none;}
-.logo {width:40px; height:40px; background:linear-gradient(135deg,#60a5fa 0%,#3b82f6 100%); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:20px; box-shadow:0 2px 8px rgba(59,130,246,0.4);}
-.header-title {flex:1;}
-.header-title h1 {font-size:20px; font-weight:600; letter-spacing:0.5px;}
-.header-title p {font-size:12px; opacity:0.9; margin-top:2px;}
-.status {display:flex; align-items:center; gap:6px; font-size:12px; padding:4px 12px; background:rgba(16,185,129,0.2); border-radius:20px; border:1px solid rgba(16,185,129,0.3);}
-.status-dot {width:8px; height:8px; background:#10b981; border-radius:50%; animation:pulse 2s infinite;}
-@keyframes pulse {0%,100%{opacity:1;}50%{opacity:0.5;}}
-.messages {flex:1; padding:20px; overflow-y:auto; display:flex; flex-direction:column; gap:16px; scroll-behavior:smooth;}
-.messages::-webkit-scrollbar {width:8px;}
-.messages::-webkit-scrollbar-track {background:rgba(0,0,0,0.2);}
-.messages::-webkit-scrollbar-thumb {background:rgba(59,130,246,0.5); border-radius:4px;}
-.msg-wrapper {display:flex; gap:12px; animation:slideIn 0.3s ease-out;}
-@keyframes slideIn {from {opacity:0; transform:translateY(10px);} to {opacity:1; transform:translateY(0);}}
-.msg-wrapper.me {flex-direction:row-reverse;}
-.avatar {width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; box-shadow:0 2px 8px rgba(0,0,0,0.2);}
-.avatar.user {background:linear-gradient(135deg,#8b5cf6 0%,#6366f1 100%);}
-.avatar.bot {background:linear-gradient(135deg,#06b6d4 0%,#0891b2 100%);}
-.msg {padding:12px 16px; border-radius:16px; max-width:70%; line-height:1.5; position:relative; word-wrap:break-word;}
-.msg-wrapper.me .msg {background:linear-gradient(135deg,#8b5cf6 0%,#6366f1 100%); color:#fff; border-bottom-right-radius:4px; box-shadow:0 2px 8px rgba(139,92,246,0.3);}
-.msg-wrapper.bot .msg {background:rgba(30,41,59,0.8); color:#e2e8f0; border-bottom-left-radius:4px; border:1px solid rgba(59,130,246,0.2); box-shadow:0 2px 8px rgba(0,0,0,0.2);}
-.timestamp {font-size:10px; opacity:0.6; margin-top:4px; text-align:right;}
-.typing {display:flex; gap:4px; padding:12px;}
-.typing span {width:8px; height:8px; background:#64748b; border-radius:50%; animation:typing 1.4s infinite;}
-.typing span:nth-child(2) {animation-delay:0.2s;}
-.typing span:nth-child(3) {animation-delay:0.4s;}
-@keyframes typing {0%,60%,100%{transform:translateY(0);}30%{transform:translateY(-10px);}}
-.inputArea {display:flex; padding:16px 20px; gap:12px; background:rgba(15,23,42,0.95); border-top:1px solid rgba(59,130,246,0.2); backdrop-filter:blur(10px);}
-.inputArea input {flex:1; padding:14px 18px; border-radius:24px; border:2px solid rgba(59,130,246,0.3); background:rgba(30,41,59,0.6); color:#e2e8f0; font-size:14px; transition:all 0.3s ease; outline:none;}
-.inputArea input:focus {border-color:#3b82f6; background:rgba(30,41,59,0.9); box-shadow:0 0 0 3px rgba(59,130,246,0.1);}
-.inputArea input::placeholder {color:#64748b;}
-.inputArea button {padding:14px 24px; border:none; border-radius:24px; background:linear-gradient(135deg,#3b82f6 0%,#2563eb 100%); color:#fff; font-weight:600; font-size:14px; cursor:pointer; transition:all 0.3s ease; box-shadow:0 4px 12px rgba(59,130,246,0.4);}
-.inputArea button:hover {transform:translateY(-2px); box-shadow:0 6px 16px rgba(59,130,246,0.5);}
-.inputArea button:active {transform:translateY(0);}
-.inputArea button:disabled {opacity:0.5; cursor:not-allowed; transform:none;}
-.suggestions {display:flex; gap:8px; padding:12px 20px; overflow-x:auto; background:rgba(15,23,42,0.6); border-top:1px solid rgba(59,130,246,0.1);}
-.suggestions::-webkit-scrollbar {height:4px;}
-.suggestions::-webkit-scrollbar-thumb {background:rgba(59,130,246,0.3); border-radius:2px;}
-.suggestion-chip {padding:8px 16px; background:rgba(59,130,246,0.2); border:1px solid rgba(59,130,246,0.3); border-radius:20px; font-size:13px; cursor:pointer; white-space:nowrap; transition:all 0.3s ease;}
-.suggestion-chip:hover {background:rgba(59,130,246,0.4); transform:translateY(-2px);}
-@media (max-width:768px){.msg{max-width:85%;}.header-title h1{font-size:16px;}.inputArea{padding:12px;}}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Segoe UI',sans-serif;background:linear-gradient(135deg,#0f172a,#1e293b);color:#e2e8f0;display:flex;flex-direction:column;height:100vh;}
+.header{padding:16px;background:linear-gradient(135deg,#1e40af,#3b82f6);display:flex;align-items:center;gap:12px;}
+.logo{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#60a5fa,#3b82f6);display:flex;justify-content:center;align-items:center;font-size:20px;}
+.header h1{font-size:20px;}
+.messages{flex:1;padding:20px;overflow-y:auto;display:flex;flex-direction:column;gap:14px;}
+.msg-wrapper{display:flex;gap:12px;}
+.msg-wrapper.me{flex-direction:row-reverse;}
+.msg{padding:12px 16px;border-radius:16px;max-width:70%;line-height:1.5;}
+.msg-wrapper.me .msg{background:linear-gradient(135deg,#8b5cf6,#6366f1);color:#fff;}
+.msg-wrapper.bot .msg{background:rgba(30,41,59,0.8);border:1px solid rgba(59,130,246,0.3);}
+.inputArea{display:flex;padding:16px;gap:12px;background:rgba(15,23,42,0.95);}
+.inputArea input{flex:1;padding:14px 18px;border-radius:24px;border:2px solid rgba(59,130,246,0.3);background:rgba(30,41,59,0.6);color:#e2e8f0;}
+.inputArea button{padding:14px 24px;border:none;border-radius:24px;background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff;cursor:pointer;}
 </style>
 </head>
 <body>
 
 <div class="header">
   <div class="logo">🤖</div>
-  <div class="header-title">
-    <h1>Assistente Virtual</h1>
-    <p>Inteligência artificial à sua disposição</p>
-  </div>
-  <div class="status">
-    <div class="status-dot"></div>
-    Online
-  </div>
-</div>
-
-<div class="suggestions" id="suggestions">
-  <div class="suggestion-chip" onclick="useSuggestion('Olá! Como você está?')">👋 Cumprimentar</div>
-  <div class="suggestion-chip" onclick="useSuggestion('Que horas são agora?')">🕐 Hora atual</div>
-  <div class="suggestion-chip" onclick="useSuggestion('Qual é a data de hoje?')">📅 Data</div>
-  <div class="suggestion-chip" onclick="useSuggestion('Me conte uma curiosidade')">💡 Curiosidade</div>
-  <div class="suggestion-chip" onclick="useSuggestion('Faça uma piada')">😄 Piada</div>
-  <div class="suggestion-chip" onclick="useSuggestion('Quanto é 12 + 34 * 2 - 5 / 5')">🧮 Cálculo</div>
+  <h1>Assistente Virtual</h1>
 </div>
 
 <div id="messages" class="messages"></div>
 
 <div class="inputArea">
-  <input id="inputMsg" placeholder="Digite sua mensagem aqui..." autocomplete="off">
+  <input id="inputMsg" placeholder="Digite sua mensagem..." autocomplete="off">
   <button id="sendBtn">Enviar</button>
 </div>
 
 <script>
-const messagesEl = document.getElementById('messages');
-const input = document.getElementById('inputMsg');
-const sendBtn = document.getElementById('sendBtn');
-let isTyping = false;
-let userName = null;
+const messagesEl=document.getElementById('messages');
+const input=document.getElementById('inputMsg');
+const sendBtn=document.getElementById('sendBtn');
 
-// Base de respostas
-const knowledgeBase = {
-  saudacoes: ['olá','oi','hey','bom dia','boa tarde','boa noite','e aí','opa'],
-  despedidas: ['tchau','adeus','até logo','até mais','até breve','falou','bye'],
-  agradecimentos: ['obrigado','obrigada','valeu','thanks','agradeço'],
-  curiosidades: [
-    "O coração humano bombeia cerca de 7.200 litros de sangue por dia! 💓",
-    "A luz do Sol leva 8 minutos para chegar à Terra. ☀️",
-    "Um raio é cinco vezes mais quente que a superfície do Sol! ⚡",
-    "As abelhas podem reconhecer rostos humanos! 🐝",
-    "O polvo tem três corações e sangue azul! 🐙",
-    "Bananas são ligeiramente radioativas devido ao potássio. 🍌",
-    "O som não viaja no espaço porque não há ar. 🔇",
-    "Elefantes são os únicos mamíferos que não conseguem pular. 🐘"
-  ],
-  piadas: [
-    "Por que o livro de matemática ficou triste? Porque tinha muitos problemas! 📚😄",
-    "O que o pato disse para a pata? Vem Quá! 🦆",
-    "Qual é o contrário de volátil? Vem cá sobrinho! 😂",
-    "Por que o café foi à polícia? Porque foi expresso! ☕",
-    "O que é um pontinho amarelo no céu? Um Yellowcóptero! 🚁",
-    "Por que a planta foi para o hospital? Porque ela não estava se sentindo bem! 🌱"
-  ]
-};
+let nomeUsuario=null;
+let aguardandoConfirmacao=false;
+let aguardandoNome=true;
 
-// Adiciona mensagem
-function addMessage(text, who='bot'){
+// Função de adicionar mensagens
+function addMessage(text,who='bot'){
   const wrapper=document.createElement('div');
   wrapper.className='msg-wrapper '+who;
-  const avatar=document.createElement('div');
-  avatar.className='avatar '+(who==='me'?'user':'bot');
-  avatar.textContent=who==='me'?'👤':'🤖';
-  const msgContainer=document.createElement('div');
   const msg=document.createElement('div');
   msg.className='msg';
   msg.textContent=text;
-  const time=document.createElement('div');
-  time.className='timestamp';
-  const now = new Date();
-  const timeStr = now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
-  time.textContent = userName ? `${userName}, são ${timeStr}` : timeStr;
-  msgContainer.appendChild(msg);
-  msgContainer.appendChild(time);
-  wrapper.appendChild(avatar);
-  wrapper.appendChild(msgContainer);
-  messagesEl.appendChild(wrapper);
-  messagesEl.scrollTop=messagesEl.scrollHeight;
-}
-
-// Tipagem animada
-function showTyping(){
-  const wrapper=document.createElement('div');
-  wrapper.className='msg-wrapper bot';
-  wrapper.id='typing-indicator';
-  const avatar=document.createElement('div');
-  avatar.className='avatar bot';
-  avatar.textContent='🤖';
-  const msg=document.createElement('div');
-  msg.className='msg';
-  const typing=document.createElement('div');
-  typing.className='typing';
-  typing.innerHTML='<span></span><span></span><span></span>';
-  msg.appendChild(typing);
-  wrapper.appendChild(avatar);
   wrapper.appendChild(msg);
   messagesEl.appendChild(wrapper);
   messagesEl.scrollTop=messagesEl.scrollHeight;
 }
 
-function hideTyping(){const typingIndicator=document.getElementById('typing-indicator'); if(typingIndicator) typingIndicator.remove();}
-
-// Avalia expressão matemática com segurança
-function safeEval(expr){
+// Função para cálculos matemáticos
+function calcular(expr){
   if(!/^[0-9+\-*/().\s]+$/.test(expr)) return "❌ Expressão inválida!";
-  try {return `🧮 ${expr} = ${eval(expr)}`;} 
-  catch(e){return "❌ Não consegui calcular essa expressão!";}
+  try{
+    const resultado=Function('"use strict";return ('+expr+')')();
+    return `🧮 Resultado: ${resultado}`;
+  }catch{
+    return "❌ Não consegui calcular isso.";
+  }
 }
 
-// Checa se contém qualquer palavra
-function containsAny(text, keywords){return keywords.some(k=>text.includes(k));}
+// Função principal do bot
+function botResponder(texto){
+  const t=texto.trim().toLowerCase();
 
-// Gera resposta do bot
-function botRespond(text){
-  const t=text.toLowerCase().trim();
-  
-  // Pergunta pelo nome
-  if(!userName){
-    userName = text.trim().split(' ')[0];
-    return `Ótimo, ${userName}! Agora posso te ajudar melhor. 😊`;
+  // Se estiver aguardando o nome
+  if(aguardandoNome){
+    if(!/^[a-zA-ZÀ-ÿ\s]+$/.test(texto)){
+      return "Digite apenas letras, por favor. 😊 Qual é o seu nome?";
+    } else {
+      nomeUsuario = texto.charAt(0).toUpperCase() + texto.slice(1);
+      aguardandoNome=false;
+      aguardandoConfirmacao=true;
+      return `Seu nome é ${nomeUsuario}? (responda com "sim" ou "não")`;
+    }
   }
 
-  // Saudações
-  if(containsAny(t,knowledgeBase.saudacoes)){
-    const h=new Date().getHours();
-    if(h<12) return `Bom dia, ${userName}! ☀️ Como posso ajudá-lo hoje?`;
-    if(h<18) return `Boa tarde, ${userName}! 😊 Em que posso ser útil?`;
-    return `Boa noite, ${userName}! 🌙 Como posso auxiliá-lo?`;
+  // Se estiver aguardando confirmação do nome
+  if(aguardandoConfirmacao){
+    if(t.includes('sim')){
+      aguardandoConfirmacao=false;
+      return `Perfeito, ${nomeUsuario}! 😄 Agora posso te ajudar com cálculos matemáticos.`;
+    } else if(t.includes('não')){
+      aguardandoNome=true;
+      return "Ah, entendi 😅. Então, por favor, digite seu nome novamente (apenas letras).";
+    } else {
+      return "Responda apenas com 'sim' ou 'não'.";
+    }
   }
 
-  // Despedidas
-  if(containsAny(t,knowledgeBase.despedidas)) return `Até logo, ${userName}! 👋😊`;
-  if(containsAny(t,knowledgeBase.agradecimentos)) return `Por nada, ${userName}! Sempre à disposição. 😊`;
+  // Se for uma expressão matemática
+  if(/[0-9+\-*/().]+/.test(texto)) return calcular(texto);
 
-  if(t.includes('como você está')||t.includes('como vai')) return `Estou ótimo, ${userName}! E você?`;
-  if(t.includes('seu nome')||t.includes('quem é você')) return `Sou seu Assistente Virtual Profissional, ${userName}! 🤖`;
-  if(t.includes('ajuda')||t.includes('comandos')) return `Posso ajudar com: 🕐 Hora, 📅 Data, 💡 Curiosidades, 😄 Piadas, 🧮 Cálculos, 💬 Conversas gerais`;
+  // Outros tipos de mensagem
+  if(t.includes('oi')||t.includes('olá')) return `Olá, ${nomeUsuario}! 😄`;
+  if(t.includes('tchau')||t.includes('até')) return `Até logo, ${nomeUsuario}! 👋`;
+  if(t.includes('hora')) return `🕒 Agora são ${new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}, ${nomeUsuario}.`;
+  if(t.includes('data')) return `📅 Hoje é ${new Date().toLocaleDateString('pt-BR',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}.`;
 
-  // Hora e data
-  if(t.includes('hora')) return `🕐 ${userName}, são ${new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}`;
-  if(t.includes('data')||t.includes('hoje')) return `📅 Hoje é ${new Date().toLocaleDateString('pt-BR',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}, ${userName}.`;
-
-  // Curiosidades e piadas
-  if(t.includes('curiosidade')) return `Você sabia, ${userName}? ${knowledgeBase.curiosidades[Math.floor(Math.random()*knowledgeBase.curiosidades.length)]}`;
-  if(t.includes('piada')||t.includes('engraçado')) return knowledgeBase.piadas[Math.floor(Math.random()*knowledgeBase.piadas.length)];
-
-  // Expressões matemáticas
-  if(t.match(/[0-9+\-*/().\s]+/)) return safeEval(text);
-
-  // Respostas padrão
-  const responses=[
-    `Interessante, ${userName}! Pode me dar mais detalhes? 🤔`,
-    `Entendo, ${userName}. Como posso ajudar você? 💬`,
-    `Hmm, ${userName}, não tenho certeza sobre isso. Pode reformular? 🔍`,
-    `Essa é uma questão interessante, ${userName}! 📚`,
-    `Desculpe, ${userName}, ainda estou aprendendo sobre isso. 🎓`
-  ];
-  return responses[Math.floor(Math.random()*responses.length)];
+  return `Desculpe, ${nomeUsuario}, eu só sei resolver cálculos no momento. 😅`;
 }
 
-// Envia mensagem
-async function handleSend(){
-  const text=input.value.trim();
-  if(!text||isTyping) return;
-  addMessage(text,'me');
+// Função de envio
+function enviarMensagem(){
+  const texto=input.value.trim();
+  if(!texto) return;
+  addMessage(texto,'me');
   input.value='';
-  sendBtn.disabled=true;
-  isTyping=true;
-  showTyping();
-  await new Promise(r=>setTimeout(r,500+Math.random()*500));
-  hideTyping();
-  addMessage(botRespond(text),'bot');
-  sendBtn.disabled=false;
-  isTyping=false;
-  input.focus();
+  setTimeout(()=>{
+    const resposta=botResponder(texto);
+    addMessage(resposta,'bot');
+  },500);
 }
 
-// Eventos
-sendBtn.addEventListener('click',handleSend);
-input.addEventListener('keypress',e=>{if(e.key==='Enter'){handleSend();}});
-function useSuggestion(text){input.value=text; input.focus(); handleSend();}
+sendBtn.addEventListener('click',enviarMensagem);
+input.addEventListener('keypress',e=>{if(e.key==='Enter') enviarMensagem();});
 
 // Mensagem inicial
 setTimeout(()=>{
-  addMessage('Olá! Seja bem-vindo(a)! 👋','bot');
-  setTimeout(()=>{addMessage('Qual é o seu nome? 😊','bot');},800);
+  addMessage("Olá! 👋 Eu sou seu assistente virtual de matemática.");
+  setTimeout(()=>addMessage("Qual é o seu nome? (apenas letras, por favor)"),700);
 },500);
-
-input.focus();
 </script>
+
 </body>
 </html>
