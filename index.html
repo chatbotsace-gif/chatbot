@@ -118,6 +118,8 @@ body{
   <button onclick="sendQuick('Qual a data de hoje?')">📅 Data</button>
   <button onclick="sendQuick('Me conte uma piada')">😄 Piada</button>
   <button onclick="sendQuick('10 + 25 * 2')">🧮 Cálculo</button>
+  <button onclick="sendQuick('raiz(144)')">🔢 Raiz</button>
+  <button onclick="sendQuick('5^3')">🔢 Potência</button>
 </div>
 
 <div id="messages" class="messages"></div>
@@ -135,6 +137,7 @@ const sendBtn=document.getElementById('sendBtn');
 const micBtn=document.getElementById('micBtn');
 let userName=null;
 
+// Adiciona mensagem ao chat
 function addMessage(text,who='bot'){
   const wrap=document.createElement('div');
   wrap.className='msg-wrapper '+who;
@@ -151,16 +154,36 @@ function addMessage(text,who='bot'){
   speak(text,who);
 }
 
+// Envia ações rápidas
 function sendQuick(text){
   addMessage(text,'me');
   setTimeout(()=>addMessage(botRespond(text),'bot'),400);
 }
 
+// Função de cálculo avançada
 function safeEval(expr){
-  if(!/^[0-9+\-*/().\s]+$/.test(expr)) return "⚠️ Isso não é um cálculo válido.";
-  try{return `🧮 ${expr} = ${eval(expr)}`;}catch{return "❌ Erro ao calcular.";}
+  try {
+    expr = expr.toLowerCase();
+
+    expr = expr.replace(/x/g,'*');
+    expr = expr.replace(/vezes/g,'*');
+    expr = expr.replace(/dividido por/g,'/');
+    expr = expr.replace(/mais/g,'+');
+    expr = expr.replace(/menos/g,'-');
+    expr = expr.replace(/raiz\(([\d.]+)\)/g,'Math.sqrt($1)');
+    expr = expr.replace(/(\d+)\^(\d+)/g,'Math.pow($1,$2)');
+
+    if(!/^[0-9+\-*/().\sMathsqrtpow]+$/.test(expr)) 
+      return "⚠️ Expressão inválida.";
+
+    let result = eval(expr);
+    return `🧮 ${expr} = ${result}`;
+  } catch {
+    return "❌ Erro ao calcular.";
+  }
 }
 
+// Respostas do bot
 function botRespond(msg){
   msg=msg.toLowerCase().trim();
   if(!userName){
@@ -172,10 +195,11 @@ function botRespond(msg){
   if(msg.includes('hora')) return `Agora são ${new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}.`;
   if(msg.includes('data')) return `Hoje é ${new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}.`;
   if(msg.includes('piada')) return "😂 Por que o livro de matemática ficou triste? Porque ele tinha muitos problemas!";
-  if(/^[0-9+\-*/().\s]+$/.test(msg)) return safeEval(msg);
+  if(/^[0-9+\-*/().\s]+$/.test(msg) || msg.includes('raiz') || msg.includes('^')) return safeEval(msg);
   return `Desculpe, ${userName}, ainda não entendo essa pergunta. 🤖`;
 }
 
+// Envia mensagem
 function handleSend(){
   const text=input.value.trim();
   if(!text)return;
@@ -187,11 +211,8 @@ function handleSend(){
 sendBtn.addEventListener('click',handleSend);
 input.addEventListener('keypress',e=>{if(e.key==='Enter')handleSend();});
 
-// Ajusta layout ao abrir o teclado no mobile
-window.addEventListener('resize',()=>{
-  document.body.style.height=window.innerHeight+'px';
-  messagesEl.scrollTop=messagesEl.scrollHeight;
-});
+// Ajusta altura no mobile
+window.addEventListener('resize',()=>{document.body.style.height=window.innerHeight+'px';messagesEl.scrollTop=messagesEl.scrollHeight;});
 
 // Fala (voz)
 function speak(text,who){
@@ -219,6 +240,7 @@ micBtn.addEventListener('click',()=>{
   rec.start();
 });
 
+// Mensagem inicial
 setTimeout(()=>addMessage('Olá! 👋 Seja bem-vindo(a)! Qual é o seu nome? 😊'),'500');
 </script>
 
