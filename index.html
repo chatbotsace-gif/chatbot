@@ -3,29 +3,37 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Assistente Virtual</title>
+<title>Assistente de Cálculos</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:'Segoe UI',sans-serif;background:linear-gradient(135deg,#0f172a,#1e293b);color:#e2e8f0;display:flex;flex-direction:column;height:100vh;}
-.header{padding:16px;background:linear-gradient(135deg,#1e40af,#3b82f6);display:flex;align-items:center;gap:12px;}
-.logo{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#60a5fa,#3b82f6);display:flex;justify-content:center;align-items:center;font-size:20px;}
-.header h1{font-size:20px;}
-.messages{flex:1;padding:20px;overflow-y:auto;display:flex;flex-direction:column;gap:14px;}
+body{font-family:'Segoe UI',Tahoma,sans-serif;background:linear-gradient(135deg,#0f172a,#1e293b);color:#e2e8f0;display:flex;flex-direction:column;height:100vh;overflow:hidden;}
+.header{padding:16px 24px;background:linear-gradient(135deg,#1e40af,#3b82f6);box-shadow:0 4px 6px rgba(0,0,0,0.3);display:flex;align-items:center;gap:12px;}
+.logo{width:40px;height:40px;background:linear-gradient(135deg,#60a5fa,#3b82f6);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 2px 8px rgba(59,130,246,0.4);}
+.header-title{flex:1;}
+.header-title h1{font-size:20px;font-weight:600;}
+.status{font-size:12px;padding:4px 12px;background:rgba(16,185,129,0.2);border-radius:20px;border:1px solid rgba(16,185,129,0.3);display:flex;align-items:center;gap:6px;}
+.status-dot{width:8px;height:8px;background:#10b981;border-radius:50%;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.5;}}
+.messages{flex:1;padding:20px;overflow-y:auto;display:flex;flex-direction:column;gap:16px;}
 .msg-wrapper{display:flex;gap:12px;}
 .msg-wrapper.me{flex-direction:row-reverse;}
+.avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.avatar.user{background:linear-gradient(135deg,#8b5cf6,#6366f1);}
+.avatar.bot{background:linear-gradient(135deg,#06b6d4,#0891b2);}
 .msg{padding:12px 16px;border-radius:16px;max-width:70%;line-height:1.5;}
 .msg-wrapper.me .msg{background:linear-gradient(135deg,#8b5cf6,#6366f1);color:#fff;}
-.msg-wrapper.bot .msg{background:rgba(30,41,59,0.8);border:1px solid rgba(59,130,246,0.3);}
-.inputArea{display:flex;padding:16px;gap:12px;background:rgba(15,23,42,0.95);}
-.inputArea input{flex:1;padding:14px 18px;border-radius:24px;border:2px solid rgba(59,130,246,0.3);background:rgba(30,41,59,0.6);color:#e2e8f0;}
-.inputArea button{padding:14px 24px;border:none;border-radius:24px;background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff;cursor:pointer;}
+.msg-wrapper.bot .msg{background:rgba(30,41,59,0.8);color:#e2e8f0;border:1px solid rgba(59,130,246,0.2);}
+.inputArea{display:flex;padding:16px 20px;gap:12px;background:rgba(15,23,42,0.95);border-top:1px solid rgba(59,130,246,0.2);}
+.inputArea input{flex:1;padding:14px 18px;border-radius:24px;border:2px solid rgba(59,130,246,0.3);background:rgba(30,41,59,0.6);color:#e2e8f0;font-size:14px;outline:none;}
+.inputArea button{padding:14px 24px;border:none;border-radius:24px;background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff;font-weight:600;font-size:14px;cursor:pointer;}
 </style>
 </head>
 <body>
 
 <div class="header">
   <div class="logo">🤖</div>
-  <h1>Assistente Virtual</h1>
+  <div class="header-title"><h1>Assistente de Cálculos</h1></div>
+  <div class="status"><div class="status-dot"></div>Online</div>
 </div>
 
 <div id="messages" class="messages"></div>
@@ -40,94 +48,90 @@ const messagesEl=document.getElementById('messages');
 const input=document.getElementById('inputMsg');
 const sendBtn=document.getElementById('sendBtn');
 
-let nomeUsuario=null;
-let aguardandoConfirmacao=false;
-let aguardandoNome=true;
+let userName=null;
+let askingName=true;
+let confirmingName=false;
 
-// Função de adicionar mensagens
+// Adiciona mensagem
 function addMessage(text,who='bot'){
   const wrapper=document.createElement('div');
   wrapper.className='msg-wrapper '+who;
+  const avatar=document.createElement('div');
+  avatar.className='avatar '+(who==='me'?'user':'bot');
+  avatar.textContent=who==='me'?'👤':'🤖';
   const msg=document.createElement('div');
   msg.className='msg';
   msg.textContent=text;
+  wrapper.appendChild(avatar);
   wrapper.appendChild(msg);
   messagesEl.appendChild(wrapper);
   messagesEl.scrollTop=messagesEl.scrollHeight;
 }
 
-// Função para cálculos matemáticos
-function calcular(expr){
-  if(!/^[0-9+\-*/().\s]+$/.test(expr)) return "❌ Expressão inválida!";
-  try{
-    const resultado=Function('"use strict";return ('+expr+')')();
-    return `🧮 Resultado: ${resultado}`;
-  }catch{
-    return "❌ Não consegui calcular isso.";
-  }
+// Função segura para cálculos
+function safeEval(expr){
+  if(!/^[0-9+\-*/().\s]+$/.test(expr)) return "❌ Digite apenas números e operações matemáticas!";
+  try {return `🧮 ${expr} = ${eval(expr)}`;}
+  catch(e){return "❌ Não consegui calcular isso!";}
 }
 
-// Função principal do bot
-function botResponder(texto){
-  const t=texto.trim().toLowerCase();
+// Função principal de resposta
+function botRespond(text){
+  const msg=text.trim();
+  const msgLower=msg.toLowerCase();
 
-  // Se estiver aguardando o nome
-  if(aguardandoNome){
-    if(!/^[a-zA-ZÀ-ÿ\s]+$/.test(texto)){
-      return "Digite apenas letras, por favor. 😊 Qual é o seu nome?";
-    } else {
-      nomeUsuario = texto.charAt(0).toUpperCase() + texto.slice(1);
-      aguardandoNome=false;
-      aguardandoConfirmacao=true;
-      return `Seu nome é ${nomeUsuario}? (responda com "sim" ou "não")`;
+  // Etapa 1 - Pedindo nome (só letras)
+  if(askingName){
+    // Verifica se contém apenas letras e espaços
+    if(!/^[A-Za-zÀ-ÿ\s]+$/.test(msg)){
+      return "⚠️ Por favor, digite apenas letras no seu nome (sem números ou símbolos).";
+    }
+    userName=msg.replace(/\s+/g,' ').trim();
+    askingName=false;
+    confirmingName=true;
+    return `Seu nome é "${userName}"? (Responda com "sim" ou "não")`;
+  }
+
+  // Etapa 2 - Confirmação do nome
+  if(confirmingName){
+    if(msgLower.includes('sim')){
+      confirmingName=false;
+      return `Perfeito, ${userName}! 😊 Agora posso resolver cálculos pra você.`;
+    } 
+    else if(msgLower.includes('não')){
+      userName=null;
+      askingName=true;
+      return "Tudo bem! Digite novamente o seu nome (somente letras, por favor):";
+    } 
+    else {
+      return 'Por favor, responda apenas com "sim" ou "não".';
     }
   }
 
-  // Se estiver aguardando confirmação do nome
-  if(aguardandoConfirmacao){
-    if(t.includes('sim')){
-      aguardandoConfirmacao=false;
-      return `Perfeito, ${nomeUsuario}! 😄 Agora posso te ajudar com cálculos matemáticos.`;
-    } else if(t.includes('não')){
-      aguardandoNome=true;
-      return "Ah, entendi 😅. Então, por favor, digite seu nome novamente (apenas letras).";
-    } else {
-      return "Responda apenas com 'sim' ou 'não'.";
-    }
+  // Etapa 3 - Cálculos
+  if(/^[0-9+\-*/().\s]+$/.test(msg)){
+    return safeEval(msg);
   }
 
-  // Se for uma expressão matemática
-  if(/[0-9+\-*/().]+/.test(texto)) return calcular(texto);
-
-  // Outros tipos de mensagem
-  if(t.includes('oi')||t.includes('olá')) return `Olá, ${nomeUsuario}! 😄`;
-  if(t.includes('tchau')||t.includes('até')) return `Até logo, ${nomeUsuario}! 👋`;
-  if(t.includes('hora')) return `🕒 Agora são ${new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}, ${nomeUsuario}.`;
-  if(t.includes('data')) return `📅 Hoje é ${new Date().toLocaleDateString('pt-BR',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}.`;
-
-  return `Desculpe, ${nomeUsuario}, eu só sei resolver cálculos no momento. 😅`;
+  // Se não for cálculo
+  return `Posso resolver cálculos matemáticos, ${userName}. Tente algo como "25 * (8 + 2)" 😊`;
 }
 
-// Função de envio
-function enviarMensagem(){
-  const texto=input.value.trim();
-  if(!texto) return;
-  addMessage(texto,'me');
+// Envia mensagem
+function handleSend(){
+  const text=input.value.trim();
+  if(!text)return;
+  addMessage(text,'me');
   input.value='';
-  setTimeout(()=>{
-    const resposta=botResponder(texto);
-    addMessage(resposta,'bot');
-  },500);
+  const resposta=botRespond(text);
+  setTimeout(()=>addMessage(resposta,'bot'),400);
 }
 
-sendBtn.addEventListener('click',enviarMensagem);
-input.addEventListener('keypress',e=>{if(e.key==='Enter') enviarMensagem();});
+sendBtn.addEventListener('click',handleSend);
+input.addEventListener('keypress',e=>{if(e.key==='Enter')handleSend();});
 
 // Mensagem inicial
-setTimeout(()=>{
-  addMessage("Olá! 👋 Eu sou seu assistente virtual de matemática.");
-  setTimeout(()=>addMessage("Qual é o seu nome? (apenas letras, por favor)"),700);
-},500);
+setTimeout(()=>addMessage('Olá! 👋 Seja bem-vindo(a)! Qual é o seu nome? 😊'),'500');
 </script>
 
 </body>
