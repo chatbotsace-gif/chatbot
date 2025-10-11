@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Assistente Virtual Profissional</title>
+<title>Assistente Virtual</title>
 <style>
 * {
   margin: 0;
@@ -13,7 +13,9 @@
 
 body {
   font-family: 'Segoe UI', Tahoma, sans-serif;
-  background: linear-gradient(135deg, #0f172a, #1e293b);
+  background: linear-gradient(135deg, #0f172a, #1e293b, #0f172a);
+  background-size: 200% 200%;
+  animation: gradientShift 15s ease infinite;
   color: #e2e8f0;
   display: flex;
   flex-direction: column;
@@ -21,46 +23,82 @@ body {
   overflow: hidden;
 }
 
+@keyframes gradientShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
 .header {
   padding: 16px 20px;
-  background: linear-gradient(135deg, #1e40af, #3b82f6);
+  background: linear-gradient(135deg, #1e40af, #3b82f6, #2563eb);
   display: flex;
   align-items: center;
   gap: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4);
+  position: relative;
+  overflow: hidden;
+}
+
+.header::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+  animation: shine 3s infinite;
+}
+
+@keyframes shine {
+  0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+  100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
 }
 
 .logo {
-  width: 40px;
-  height: 40px;
+  width: 45px;
+  height: 45px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   background: linear-gradient(135deg, #60a5fa, #3b82f6);
-  font-size: 20px;
+  font-size: 22px;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.5);
+  animation: float 3s ease-in-out infinite;
+  z-index: 1;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-5px); }
 }
 
 .header-title {
   flex: 1;
+  z-index: 1;
 }
 
 .header-title h1 {
-  font-size: 18px;
-  font-weight: 600;
+  font-size: 20px;
+  font-weight: 700;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
 }
 
 .header-title p {
-  font-size: 12px;
-  opacity: 0.8;
+  font-size: 13px;
+  opacity: 0.9;
+  margin-top: 2px;
 }
 
 .status {
   font-size: 12px;
-  padding: 4px 10px;
+  padding: 6px 12px;
   border-radius: 20px;
-  background: rgba(16, 185, 129, 0.2);
-  border: 1px solid rgba(16, 185, 129, 0.3);
+  background: rgba(16, 185, 129, 0.25);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  z-index: 1;
+  backdrop-filter: blur(10px);
 }
 
 .status-dot {
@@ -69,61 +107,92 @@ body {
   background: #10b981;
   border-radius: 50%;
   display: inline-block;
-  margin-right: 4px;
+  margin-right: 6px;
   animation: pulse 2s infinite;
+  box-shadow: 0 0 8px #10b981;
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.2); }
 }
 
 .quickActions {
   display: flex;
   gap: 8px;
   overflow-x: auto;
-  padding: 8px 12px;
-  background: rgba(15, 23, 42, 0.9);
+  padding: 12px;
+  background: rgba(15, 23, 42, 0.95);
   scrollbar-width: thin;
+  border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.quickActions::-webkit-scrollbar {
+  height: 6px;
+}
+
+.quickActions::-webkit-scrollbar-thumb {
+  background: rgba(59, 130, 246, 0.5);
+  border-radius: 3px;
 }
 
 .quickActions button {
-  padding: 8px 14px;
+  padding: 10px 16px;
   border: none;
   border-radius: 20px;
-  background: rgba(37, 99, 235, 0.2);
+  background: rgba(37, 99, 235, 0.25);
   color: #93c5fd;
   font-size: 13px;
   white-space: nowrap;
   cursor: pointer;
   transition: all 0.3s;
+  font-weight: 500;
+  border: 1px solid rgba(59, 130, 246, 0.3);
 }
 
 .quickActions button:hover {
-  background: rgba(59, 130, 246, 0.3);
-  transform: scale(1.05);
+  background: rgba(59, 130, 246, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.quickActions button:active {
+  transform: translateY(0px);
 }
 
 .messages {
   flex: 1;
   overflow-y: auto;
-  padding: 14px 14px 80px 14px;
+  padding: 16px 16px 90px 16px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 16px;
   scroll-behavior: smooth;
+}
+
+.messages::-webkit-scrollbar {
+  width: 8px;
+}
+
+.messages::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.5);
+}
+
+.messages::-webkit-scrollbar-thumb {
+  background: rgba(59, 130, 246, 0.5);
+  border-radius: 4px;
 }
 
 .msg-wrapper {
   display: flex;
-  gap: 10px;
-  animation: fadeIn 0.3s;
+  gap: 12px;
+  animation: fadeInUp 0.4s ease;
 }
 
-@keyframes fadeIn {
+@keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(20px);
   }
   to {
     opacity: 1;
@@ -136,13 +205,15 @@ body {
 }
 
 .avatar {
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  font-size: 18px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
 }
 
 .avatar.user {
@@ -154,56 +225,96 @@ body {
 }
 
 .msg {
-  padding: 10px 14px;
-  border-radius: 16px;
+  padding: 12px 16px;
+  border-radius: 18px;
   max-width: 75%;
   font-size: 14px;
-  line-height: 1.5;
+  line-height: 1.6;
   word-wrap: break-word;
   white-space: pre-line;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
 
 .msg-wrapper.me .msg {
   background: linear-gradient(135deg, #8b5cf6, #6366f1);
   color: #fff;
+  border-bottom-right-radius: 4px;
 }
 
 .msg-wrapper.bot .msg {
-  background: rgba(30, 41, 59, 0.8);
-  border: 1px solid rgba(59, 130, 246, 0.2);
+  background: rgba(30, 41, 59, 0.9);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-bottom-left-radius: 4px;
+  backdrop-filter: blur(10px);
+}
+
+.typing-indicator {
+  display: flex;
+  gap: 4px;
+  padding: 12px 16px;
+}
+
+.typing-indicator span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #3b82f6;
+  animation: typing 1.4s infinite;
+}
+
+.typing-indicator span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.typing-indicator span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes typing {
+  0%, 60%, 100% {
+    transform: translateY(0);
+    opacity: 0.7;
+  }
+  30% {
+    transform: translateY(-10px);
+    opacity: 1;
+  }
 }
 
 .inputArea {
   display: flex;
-  padding: 10px;
-  gap: 8px;
-  background: rgba(15, 23, 42, 0.95);
-  border-top: 1px solid rgba(59, 130, 246, 0.2);
+  padding: 12px;
+  gap: 10px;
+  background: rgba(15, 23, 42, 0.98);
+  border-top: 1px solid rgba(59, 130, 246, 0.3);
   position: fixed;
   bottom: 0;
   left: 0;
   width: 100%;
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(15px);
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.3);
 }
 
 .inputArea input {
   flex: 1;
-  padding: 12px 16px;
+  padding: 14px 18px;
   border-radius: 24px;
-  border: 2px solid rgba(59, 130, 246, 0.3);
-  background: rgba(30, 41, 59, 0.6);
+  border: 2px solid rgba(59, 130, 246, 0.4);
+  background: rgba(30, 41, 59, 0.7);
   color: #e2e8f0;
   font-size: 14px;
   outline: none;
-  transition: border 0.3s;
+  transition: all 0.3s;
 }
 
 .inputArea input:focus {
-  border-color: rgba(59, 130, 246, 0.6);
+  border-color: rgba(59, 130, 246, 0.8);
+  background: rgba(30, 41, 59, 0.9);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .inputArea button {
-  padding: 12px 18px;
+  padding: 14px 20px;
   border: none;
   border-radius: 24px;
   background: linear-gradient(135deg, #3b82f6, #2563eb);
@@ -212,11 +323,16 @@ body {
   font-size: 14px;
   cursor: pointer;
   transition: all 0.3s;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
 
 .inputArea button:hover:not(:disabled) {
-  transform: scale(1.05);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5);
+}
+
+.inputArea button:active:not(:disabled) {
+  transform: translateY(0px);
 }
 
 .inputArea button:disabled {
@@ -226,7 +342,8 @@ body {
 
 #micBtn {
   background: linear-gradient(135deg, #10b981, #059669);
-  min-width: 48px;
+  min-width: 50px;
+  font-size: 16px;
 }
 
 #micBtn.recording {
@@ -235,8 +352,50 @@ body {
 }
 
 @keyframes recordPulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.1); }
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.5);
+  }
+  50% {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.8);
+  }
+}
+
+.clear-btn {
+  position: fixed;
+  bottom: 90px;
+  right: 20px;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  border: none;
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+  transition: all 0.3s;
+  z-index: 10;
+}
+
+.clear-btn:hover {
+  transform: scale(1.1) rotate(90deg);
+  box-shadow: 0 6px 20px rgba(239, 68, 68, 0.6);
+}
+
+@media (max-width: 600px) {
+  .msg {
+    max-width: 85%;
+  }
+  
+  .header-title h1 {
+    font-size: 16px;
+  }
+  
+  .header-title p {
+    font-size: 11px;
+  }
 }
 </style>
 </head>
@@ -245,27 +404,30 @@ body {
 <div class="header">
   <div class="logo">🤖</div>
   <div class="header-title">
-    <h1>Assistente Virtual</h1>
-    <p>Fala, ouve e resolve cálculos!</p>
+    <h1>Assistente Virtual Pro</h1>
+    <p>Inteligente, rápido e divertido!</p>
   </div>
   <div class="status"><span class="status-dot"></span>Online</div>
 </div>
 
 <div class="quickActions">
-  <button onclick="sendQuick('Oi')">👋 Oi</button>
+  <button onclick="sendQuick('Oi')">👋 Saudar</button>
   <button onclick="sendQuick('Que horas são?')">⏰ Hora</button>
-  <button onclick="sendQuick('Qual a data de hoje?')">📅 Data</button>
+  <button onclick="sendQuick('Qual a data?')">📅 Data</button>
   <button onclick="sendQuick('Me conte uma piada')">😄 Piada</button>
-  <button onclick="sendQuick('50% de 200')">🧮 Cálculo</button>
+  <button onclick="sendQuick('50% de 200')">🧮 Calcular</button>
   <button onclick="sendQuick('Qual a temperatura?')">🌡️ Clima</button>
   <button onclick="sendQuick('Conte uma história')">📖 História</button>
   <button onclick="sendQuick('Crie uma música')">🎵 Música</button>
+  <button onclick="sendQuick('Quem criou você?')">ℹ️ Sobre</button>
 </div>
 
 <div id="messages" class="messages"></div>
 
+<button class="clear-btn" onclick="clearChat()" title="Limpar chat">🗑️</button>
+
 <div class="inputArea">
-  <input id="inputMsg" placeholder="Digite aqui..." autocomplete="off">
+  <input id="inputMsg" placeholder="Digite sua mensagem..." autocomplete="off">
   <button id="micBtn">🎤</button>
   <button id="sendBtn">Enviar</button>
 </div>
@@ -282,17 +444,34 @@ let userName = null;
 let isProcessing = false;
 let conversationState = 'IDLE';
 let tempData = {};
+let messageHistory = [];
 
-// Carregar nome salvo
+// Carregar dados salvos
 window.addEventListener('DOMContentLoaded', () => {
   const savedName = localStorage.getItem('userName');
   if (savedName) {
     userName = savedName;
   }
+  
+  const savedHistory = localStorage.getItem('chatHistory');
+  if (savedHistory) {
+    try {
+      const history = JSON.parse(savedHistory);
+      history.forEach(msg => {
+        addMessage(msg.text, msg.who, false);
+      });
+    } catch (e) {
+      console.error('Erro ao carregar histórico');
+    }
+  }
+  
+  if (messagesEl.children.length === 0) {
+    addMessage("Olá! 👋 Sou seu assistente virtual. Como posso ajudar?", 'bot', false);
+  }
 });
 
 // Adicionar mensagem
-function addMessage(text, who = 'bot') {
+function addMessage(text, who = 'bot', shouldSave = true) {
   const wrap = document.createElement('div');
   wrap.className = 'msg-wrapper ' + who;
   
@@ -310,8 +489,51 @@ function addMessage(text, who = 'bot') {
   
   messagesEl.scrollTop = messagesEl.scrollHeight;
   
+  if (shouldSave) {
+    messageHistory.push({ text, who });
+    if (messageHistory.length > 50) {
+      messageHistory.shift();
+    }
+    localStorage.setItem('chatHistory', JSON.stringify(messageHistory));
+  }
+  
   if (who === 'bot') {
     speak(text);
+  }
+}
+
+// Indicador de digitação
+function showTyping() {
+  const wrap = document.createElement('div');
+  wrap.className = 'msg-wrapper bot typing-wrapper';
+  wrap.innerHTML = `
+    <div class="avatar bot">🤖</div>
+    <div class="msg">
+      <div class="typing-indicator">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    </div>
+  `;
+  messagesEl.appendChild(wrap);
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+  return wrap;
+}
+
+function removeTyping(element) {
+  if (element && element.parentNode) {
+    element.parentNode.removeChild(element);
+  }
+}
+
+// Limpar chat
+function clearChat() {
+  if (confirm('Deseja limpar todo o histórico?')) {
+    messagesEl.innerHTML = '';
+    messageHistory = [];
+    localStorage.removeItem('chatHistory');
+    addMessage("Chat limpo! Como posso ajudar?", 'bot');
   }
 }
 
@@ -321,13 +543,15 @@ function speak(text) {
   
   try {
     speechSynthesis.cancel();
-    const utter = new SpeechSynthesisUtterance(text);
+    const cleanText = text.replace(/[🤖😊👋⏰📅😄🧮🌡️📖🎵💡✨🎉🏆⚔️😂🌙👻🐉💕🎤🎸💿🎺🎹🪕❌✅]/g, '');
+    const utter = new SpeechSynthesisUtterance(cleanText);
     utter.lang = 'pt-BR';
-    utter.rate = 0.95;
-    utter.pitch = 1;
+    utter.rate = 1.0;
+    utter.pitch = 1.1;
+    utter.volume = 0.8;
     speechSynthesis.speak(utter);
   } catch (error) {
-    console.error('Erro na síntese de voz:', error);
+    console.error('Erro na síntese:', error);
   }
 }
 
@@ -359,8 +583,8 @@ micBtn.addEventListener('click', () => {
   rec.onerror = (error) => {
     micBtn.classList.remove('recording');
     micBtn.disabled = false;
-    console.error('Erro no reconhecimento:', error);
-    addMessage("❌ Erro no reconhecimento de voz. Tente novamente!", 'bot');
+    console.error('Erro:', error);
+    addMessage("❌ Erro no reconhecimento. Tente novamente!", 'bot');
   };
   
   rec.onend = () => {
@@ -373,7 +597,7 @@ micBtn.addEventListener('click', () => {
   } catch (error) {
     micBtn.classList.remove('recording');
     micBtn.disabled = false;
-    addMessage("❌ Erro ao iniciar reconhecimento. Tente novamente!", 'bot');
+    addMessage("❌ Erro ao iniciar. Tente novamente!", 'bot');
   }
 });
 
@@ -395,9 +619,12 @@ function handleSend() {
   isProcessing = true;
   sendBtn.disabled = true;
   
+  const typingIndicator = showTyping();
+  
   setTimeout(() => {
+    removeTyping(typingIndicator);
     botRespond(text);
-  }, 300);
+  }, 500 + Math.random() * 500);
 }
 
 sendBtn.addEventListener('click', handleSend);
@@ -425,7 +652,7 @@ function validateName(name) {
     .join(' ');
 }
 
-// Corrigir erros de digitação
+// Corrigir erros
 function correctTypos(text) {
   const corrections = {
     'oi': ['oin', 'oii', 'oie'],
@@ -456,13 +683,12 @@ function correctTypos(text) {
   return corrected;
 }
 
-// Calcular expressão (SEGURO - sem eval)
+// Calcular expressão
 function calcExpr(expr) {
   try {
     const original = expr;
     expr = expr.replace(/\s+/g, '');
     
-    // Porcentagens
     expr = expr.replace(/(\d+(?:\.\d+)?)%\s*de\s*(\d+(?:\.\d+)?)/gi, (match, percent, num) => {
       return (parseFloat(num) * parseFloat(percent) / 100).toString();
     });
@@ -471,14 +697,13 @@ function calcExpr(expr) {
       return (parseFloat(num) / 100).toString();
     });
     
-    // Operações matemáticas avançadas
-    expr = expr.replace(/√(\d+)/g, (match, num) => Math.sqrt(parseFloat(num)));
-    expr = expr.replace(/(\d+)\^(\d+)/g, (match, base, exp) => Math.pow(parseFloat(base), parseFloat(exp)));
+    expr = expr.replace(/√(\d+(?:\.\d+)?)/g, (match, num) => Math.sqrt(parseFloat(num)));
+    expr = expr.replace(/(\d+(?:\.\d+)?)\^(\d+(?:\.\d+)?)/g, (match, base, exp) => Math.pow(parseFloat(base), parseFloat(exp)));
     
-    // Fatorial
     expr = expr.replace(/(\d+)!/g, (match, n) => {
       let num = parseInt(n);
-      if (num > 20) return 'Número muito grande para fatorial!';
+      if (num > 20) return 'Número muito grande!';
+      if (num < 0) return 'Fatorial de negativo não existe!';
       let result = 1;
       for (let i = 1; i <= num; i++) {
         result *= i;
@@ -486,18 +711,17 @@ function calcExpr(expr) {
       return result;
     });
     
-    // Logaritmos
     expr = expr.replace(/log\(([^)]+)\)/g, (match, num) => Math.log10(parseFloat(num)));
     expr = expr.replace(/ln\(([^)]+)\)/g, (match, num) => Math.log(parseFloat(num)));
     
-    // Avaliar expressão de forma segura
     const result = Function('"use strict"; return (' + expr + ')')();
     
     if (isNaN(result) || !isFinite(result)) {
       return null;
     }
     
-    return `🧮 ${original} = ${result}`;
+    const formattedResult = Number.isInteger(result) ? result : result.toFixed(2);
+    return `🧮 Resultado:\n${original} = ${formattedResult}`;
   } catch (err) {
     return null;
   }
@@ -515,9 +739,8 @@ function isCalculation(msg) {
          /\d+%/.test(msg);
 }
 
-// Buscar clima (simulado - API com problemas)
+// Buscar clima (simulado realista)
 async function getWeather(city = 'Fortaleza') {
-  // Simulação de clima realista para diferentes cidades
   const climasPorCidade = {
     'fortaleza': [
       { temp: 29, feels: 32, desc: 'céu limpo', humidity: 70, wind: 22 },
@@ -525,11 +748,20 @@ async function getWeather(city = 'Fortaleza') {
       { temp: 30, feels: 33, desc: 'ensolarado', humidity: 72, wind: 18 },
       { temp: 28, feels: 31, desc: 'sol com nuvens', humidity: 75, wind: 25 }
     ],
+    'sao paulo': [
+      { temp: 22, feels: 23, desc: 'nublado', humidity: 65, wind: 12 },
+      { temp: 25, feels: 27, desc: 'parcialmente nublado', humidity: 60, wind: 10 },
+      { temp: 20, feels: 21, desc: 'chuvoso', humidity: 80, wind: 15 }
+    ],
+    'rio de janeiro': [
+      { temp: 28, feels: 30, desc: 'ensolarado', humidity: 68, wind: 18 },
+      { temp: 26, feels: 28, desc: 'sol com nuvens', humidity: 72, wind: 16 },
+      { temp: 30, feels: 33, desc: 'céu limpo', humidity: 65, wind: 14 }
+    ],
     'default': [
-      { temp: 25, feels: 27, desc: 'parcialmente nublado', humidity: 65, wind: 15 },
-      { temp: 23, feels: 25, desc: 'nublado', humidity: 70, wind: 12 },
-      { temp: 27, feels: 29, desc: 'ensolarado', humidity: 60, wind: 10 },
-      { temp: 22, feels: 24, desc: 'céu limpo', humidity: 68, wind: 14 }
+      { temp: 24, feels: 26, desc: 'parcialmente nublado', humidity: 65, wind: 15 },
+      { temp: 22, feels: 24, desc: 'nublado', humidity: 70, wind: 12 },
+      { temp: 26, feels: 28, desc: 'ensolarado', humidity: 60, wind: 10 }
     ]
   };
   
@@ -537,21 +769,21 @@ async function getWeather(city = 'Fortaleza') {
   const climas = climasPorCidade[cityLower] || climasPorCidade['default'];
   const clima = climas[Math.floor(Math.random() * climas.length)];
   
-  return `🌡️ Clima em ${city}:\nTemperatura: ${clima.temp}°C (sensação ${clima.feels}°C)\nCondição: ${clima.desc}\nUmidade: ${clima.humidity}%\nVento: ${clima.wind} km/h\n\n💡 Dados simulados para fins educacionais`;
+  return `🌡️ Clima em ${city}:\n\n🌡 Temperatura: ${clima.temp}°C\n🤒 Sensação: ${clima.feels}°C\n☁️ Condição: ${clima.desc}\n💧 Umidade: ${clima.humidity}%\n💨 Vento: ${clima.wind} km/h\n\n💡 Dados simulados`;
 }
 
-// Gerar história personalizada
+// Gerar história
 function generateStory(theme, details) {
   const stories = {
-    romance: `💕 ERA UMA VEZ...\n\nEm uma tarde ensolarada, ${details}. O coração batia forte, e naquele momento mágico, o tempo pareceu parar. Os dois sorriram, sabendo que aquele seria um momento inesquecível. O amor estava no ar! ✨`,
+    romance: `💕 ERA UMA VEZ...\n\nEm uma tarde ensolarada, ${details}. O coração batia forte, e naquele momento mágico, o tempo pareceu parar. Os dois sorriram, sabendo que aquele seria um momento inesquecível. O amor estava no ar, e todos ao redor puderam sentir a energia especial daquele instante.\n\nE assim começou uma linda história de amor que seria contada por gerações! 💕✨`,
     
-    aventura: `🏰 A GRANDE AVENTURA\n\n${details}! A jornada foi cheia de desafios e emoções. Com coragem e determinação, nossos heróis enfrentaram todos os obstáculos. No final, a vitória foi épica! 🏆`,
+    aventura: `🏰 A GRANDE AVENTURA\n\n${details}! A jornada foi cheia de desafios emocionantes e perigos inesperados. Com coragem inabalável e determinação, nossos heróis enfrentaram todos os obstáculos que surgiram em seu caminho.\n\nAtravessaram montanhas, cruzaram rios e enfrentaram criaturas misteriosas. No final, a vitória foi épica e gloriosa! Uma aventura digna das maiores lendas! 🏆⚔️`,
     
-    comedia: `😄 QUE CONFUSÃO!\n\n${details}... mas tudo deu errado de um jeito hilário! Tropeços, mal-entendidos e situações engraçadas. No final, todos caíram na risada! 😂`,
+    comedia: `😄 QUE CONFUSÃO!\n\n${details}... mas tudo deu errado de um jeito absolutamente hilário! As coisas começaram a acontecer de forma cada vez mais atrapalhada: tropeços engraçados, mal-entendidos cômicos e situações absurdas.\n\nCada tentativa de resolver a situação piorava tudo de um jeito mais engraçado ainda. No final, todos caíram na risada e perceberam que às vezes o melhor é rir de si mesmo! 😂🤣`,
     
-    terror: `👻 A NOITE DO MEDO\n\nEra uma noite escura quando ${details}. Um arrepio subiu pela espinha. Sombras se moviam, sons estranhos ecoavam. O mistério nunca foi completamente resolvido... 🌙`,
+    terror: `👻 A NOITE DO MEDO\n\nEra uma noite escura e silenciosa quando ${details}. Um arrepio subiu pela espinha de todos os presentes. Sombras estranhas se moviam pelas paredes, e sons inexplicáveis ecoavam no ar.\n\nO coração acelerava a cada segundo. Cada passo era uma eternidade. O medo era real e palpável. Seria apenas imaginação ou havia algo realmente sinistro acontecendo? O mistério nunca foi completamente desvendado, e até hoje ninguém sabe ao certo o que aconteceu naquela noite... 👻🌙`,
     
-    fantasia: `🐉 MAGIA E ENCANTAMENTO\n\nNum reino distante, ${details}. Criaturas mágicas observavam, feitiços brilhavam no ar. A magia transformou tudo em um espetáculo de cores e luz! ✨`
+    fantasia: `🐉 MAGIA E ENCANTAMENTO\n\nNum reino distante e mágico, ${details}. Criaturas místicas observavam de longe, feitiços brilhantes iluminavam o céu e a magia pairava no ar como poeira de estrelas.\n\nDragões majestosos voavam sobre castelos encantados, fadas dançavam entre as flores luminosas e a natureza respondia aos encantamentos com cores vibrantes. Foi um espetáculo de pura magia que transformou tudo em algo verdadeiramente extraordinário! Uma história digna dos maiores contos de fadas! 🐉✨🔮`
   };
   
   for (let key in stories) {
@@ -560,23 +792,25 @@ function generateStory(theme, details) {
     }
   }
   
-  return `📖 ${details}\n\nE assim começa uma história incrível cheia de aventuras emocionantes! ✨`;
+  return `📖 UMA HISTÓRIA ESPECIAL\n\n${details}\n\nE assim começa uma história incrível cheia de aventuras emocionantes, personagens memoráveis e momentos inesquecíveis! O que acontecerá a seguir? Só o tempo dirá... ✨`;
 }
 
-// Gerar música personalizada
+// Gerar música
 function generateSong(style, theme) {
   const songs = {
-    rap: `🎤 RAP DO ${theme.toUpperCase()}\n\n♪ Yo, yo, escuta aqui,\nVou falar de ${theme}, pode crer,\nNa batida pesada, sem parar,\nEsse sentimento vai conquistar!\n\n(Refrão)\n${theme.toUpperCase()}, isso é real,\nNa vibe do rap, sensacional! ♪`,
+    rap: `🎤 RAP DO ${theme.toUpperCase()}\n\n♪ Yo, yo, presta atenção,\nVou falar de ${theme} com emoção,\nNa batida pesada, flow certeiro,\nEsse sentimento é verdadeiro!\n\nVem do coração, pode acreditar,\nNa vibe do rap, sem se importar,\nCom o que vão falar, o que vão pensar,\n${theme.toUpperCase()} é o que vai rolar!\n\n(Refrão)\n${theme.toUpperCase()}, isso é real,\nNa vibe do rap, sensacional,\n${theme.toUpperCase()}, sem igual,\nEssa rima é phenomenal! ♪\n\n🎤 (Drop pesado!)`,
     
-    rock: `🎸 ROCK DE ${theme.toUpperCase()}\n\n♪ Yeah! Yeah! Yeah!\n${theme} no coração,\nGuitarra gritando com emoção,\nBateria explodindo sem parar,\nEsse rock vai te fazer vibrar!\n\n(Solo de guitarra!) ♪`,
+    rock: `🎸 ROCK DE ${theme.toUpperCase()}\n\n♪ Yeah! Yeah! Yeah!\n${theme} no coração,\nGuitarra gritando com paixão,\nBateria explodindo sem parar,\nBaixo pulsando pra arrasar!\n\nNessa energia não dá pra segurar,\nO palco inteiro vai balançar,\nErga os braços, vem gritar,\nEsse rock vai te conquistar!\n\n(Refrão)\n${theme.toUpperCase()}! Sinta o poder,\nRock'n'roll até amanhecer,\n${theme.toUpperCase()}! Vem com a gente,\nEssa banda é diferente! ♪\n\n🎸 (Solo épico de guitarra!)`,
     
-    pop: `💿 POP ${theme.toUpperCase()}\n\n♪ La la la, la la la,\n${theme} me faz sonhar,\nMelodia chiclete que gruda,\nImpossível não dançar!\n\n(Refrão)\n${theme.toUpperCase()}, você e eu,\nNessa vibe que envolveu! ♪`,
+    pop: `💿 POP ${theme.toUpperCase()}\n\n♪ La la la, la la la,\n${theme} me faz voar,\nMelodia chiclete grudando,\nImpossível não dançar!\n\nBrilha como estrela no céu,\nCores vibrantes como arco-íris,\nEssa vibe contagiante,\nTodo mundo é feliz!\n\n(Refrão)\n${theme.toUpperCase()}, você e eu,\nNessa vibe que aconteceu,\n${theme.toUpperCase()}, pura alegria,\nPop que contagia todo dia! ♪\n\n💿 (Beat dançante!)`,
     
-    samba: `🎺 SAMBA DO ${theme.toUpperCase()}\n\n♪ Ô laiá, ô laiá,\n${theme} no samba a balançar,\nPandeiro batendo, cavaco tocando,\nO ritmo brasileiro chegando! ♪`,
+    samba: `🎺 SAMBA DO ${theme.toUpperCase()}\n\n♪ Ô laiá, ô laiá,\n${theme} no samba a balançar,\nPandeiro batendo com maestria,\nCavaquinho tocando harmonia!\n\nTamborim fazendo o repique,\nSurdo marcando o compasso chique,\nNo balanço brasileiro raiz,\nEsse samba deixa todo mundo feliz!\n\n(Refrão)\n${theme.toUpperCase()} no pé,\nSamba que tem axé,\n${theme.toUpperCase()} a gingar,\nVem com a gente sambar! ♪\n\n🎺 (Swing brasileiro autêntico!)`,
     
-    funk: `🎹 FUNK DO ${theme.toUpperCase()}\n\n♪ Tá tá tá tum tum,\n${theme} no funk, algum,\nGrave batendo forte no chão,\nA pista toda em emoção! ♪`,
+    funk: `🎹 FUNK DO ${theme.toUpperCase()}\n\n♪ Tá tá tá tum tum,\n${theme} no funk, nenhum,\nGrave batendo forte na caixa,\nA pista toda se abaixa!\n\nSobe desce no movimento,\nSentindo o grave no momento,\nBatidão que não tem fim,\nEssa vibe tá on assim!\n\n(Refrão)\n${theme.toUpperCase()}, desce, sobe,\nO grave explode,\n${theme.toUpperCase()}, tá bombando,\nO funkeiro tá mandando! ♪\n\n🎹 (Batidão de MTG!)`,
     
-    sertanejo: `🪕 SERTANEJO ${theme.toUpperCase()}\n\n♪ Ai ai ai, coração,\n${theme} nessa canção,\nViolão tocando suave assim,\nMódão raiz sem fim! ♪`
+    sertanejo: `🪕 SERTANEJO ${theme.toUpperCase()}\n\n♪ Ai ai ai, coração,\n${theme} nessa canção,\nViolão tocando suavemente,\nSentimento que a gente sente!\n\nNa modão que emociona,\nVoz que ressoa e apaixona,\nEsse som raiz de verdade,\nTraz saudade e felicidade!\n\n(Refrão)\n${theme.toUpperCase()}, amor demais,\nSertanejo que a gente faz,\n${theme.toUpperCase()}, sem igual,\nMódão sensacional! ♪\n\n🪕 (Viola caipira raiz!)`,
+    
+    classica: `🎻 CLÁSSICA ${theme.toUpperCase()}\n\n♪ Em majestosas notas que ecoam,\n${theme} em melodias que soam,\nViolinos dançando com graça,\nPiano tecendo uma trama que passa.\n\nOrquestra completa em harmonia,\nCrescendo que traz poesia,\nMovimento sublime e profundo,\nEmocionando todo o mundo!\n\n(Final)\n${theme.toUpperCase()} em sinfonia,\nArte pura, melodia,\nÓpera que transcende,\nMúsica que compreende! ♪\n\n🎻 (Finale grandioso!)`
   };
   
   for (let key in songs) {
@@ -585,7 +819,7 @@ function generateSong(style, theme) {
     }
   }
   
-  return `🎵 Música sobre ${theme}\n\n♪ Uma melodia linda e envolvente sobre ${theme} que toca no coração! ♪`;
+  return `🎵 MÚSICA SOBRE ${theme.toUpperCase()}\n\n♪ Uma melodia linda e envolvente,\nSobre ${theme} tão presente,\nNotas que tocam no coração,\nRitmo cheio de emoção!\n\nCada acorde uma surpresa,\nCada verso com destreza,\nEssa música especial,\nÉ simplesmente sensacional! ♪`;
 }
 
 // Responder ao usuário
@@ -599,19 +833,19 @@ async function botRespond(msg) {
       case 'WAITING_NAME':
         const validName = validateName(msg);
         if (!validName) {
-          response = "❌ Digite apenas letras no seu nome, sem números! Tente novamente: 😊";
+          response = "❌ Por favor, digite apenas letras no seu nome, sem números ou caracteres especiais! Tente novamente: 😊";
         } else {
           userName = validName;
           localStorage.setItem('userName', userName);
           conversationState = 'IDLE';
-          response = `Prazer, ${userName}! 😊 Como posso ajudar?`;
+          response = `Muito prazer, ${userName}! 🎉\n\nEstou aqui para ajudar com:\n• Cálculos matemáticos 🧮\n• Informações de clima 🌡️\n• Histórias criativas 📖\n• Músicas originais 🎵\n• E muito mais!\n\nComo posso ajudar você hoje?`;
         }
         break;
         
       case 'WAITING_STORY_THEME':
         tempData.storyTheme = msgLower;
         conversationState = 'WAITING_STORY_DETAILS';
-        response = "✨ Ótima escolha! Agora me conte:\n\nQuem são os personagens e o que acontece?\n\nExemplo: 'João beija Maria no parque'\n\nSeja criativo! 🎨";
+        response = "✨ Excelente escolha!\n\nAgora me conte os detalhes:\n\nQuem são os personagens e o que acontece na história?\n\nExemplo:\n• 'João encontra Maria na praia'\n• 'Pedro salva Ana do dragão'\n• 'Luna descobre um portal mágico'\n\nSeja criativo! 🎨";
         break;
         
       case 'WAITING_STORY_DETAILS':
@@ -623,7 +857,7 @@ async function botRespond(msg) {
       case 'WAITING_SONG_STYLE':
         tempData.songStyle = msgLower;
         conversationState = 'WAITING_SONG_THEME';
-        response = "🎶 Perfeito! Sobre o que vai ser a música?\n\nExemplo: 'amor', 'amizade', 'festa'\n\nMe conte o tema! ✨";
+        response = "🎶 Estilo escolhido!\n\nAgora me diga: sobre o que vai ser a música?\n\nExemplos:\n• Amor 💕\n• Amizade 🤝\n• Festa 🎉\n• Superação 💪\n• Saudade 😢\n• Alegria 😄\n\nQual o tema? ✨";
         break;
         
       case 'WAITING_SONG_THEME':
@@ -633,7 +867,7 @@ async function botRespond(msg) {
         break;
         
       default:
-        // Verificar se é cálculo
+        // Verificar cálculo
         if (isCalculation(msg)) {
           const calcResult = calcExpr(msg);
           if (calcResult) {
@@ -644,56 +878,93 @@ async function botRespond(msg) {
         // Comandos normais
         if (!response) {
           if (msgLower.includes("temperatura") || msgLower.includes("clima") || msgLower.includes("tempo")) {
-            addMessage("🔍 Consultando clima...", 'bot');
-            
             let city = 'Fortaleza';
             const cityMatch = msg.match(/em\s+([a-zA-ZÀ-ÿ\s]+)|de\s+([a-zA-ZÀ-ÿ\s]+)/i);
             if (cityMatch) {
               city = (cityMatch[1] || cityMatch[2]).trim();
             }
-            
             response = await getWeather(city);
-            messagesEl.removeChild(messagesEl.lastChild);
           }
           else if (msgLower.includes('história') || msgLower.includes('historia') || msgLower.includes('conto')) {
             conversationState = 'WAITING_STORY_THEME';
-            response = "📖 Vou criar uma história!\n\nQual tema?\n\n💕 Romance\n🏰 Aventura\n😄 Comédia\n👻 Terror\n🐉 Fantasia\n\nDigite o tema!";
+            response = "📖 Vou criar uma história incrível para você!\n\nEscolha um tema:\n\n💕 Romance - Histórias de amor\n🏰 Aventura - Ação e perigo\n😄 Comédia - Muita risada\n👻 Terror - Suspense arrepiante\n🐉 Fantasia - Magia e encantamento\n\nDigite o tema escolhido!";
           }
           else if (msgLower.includes('música') || msgLower.includes('musica') || msgLower.includes('canção')) {
             conversationState = 'WAITING_SONG_STYLE';
-            response = "🎵 Vou criar uma música!\n\nQue estilo?\n\n🎤 Rap\n🎸 Rock\n💿 Pop\n🎺 Samba\n🎹 Funk\n🪕 Sertanejo\n\nDigite o estilo!";
+            response = "🎵 Vou criar uma música especial!\n\nQue estilo musical você prefere?\n\n🎤 Rap - Flow e rima\n🎸 Rock - Energia total\n💿 Pop - Melodia chiclete\n🎺 Samba - Swing brasileiro\n🎹 Funk - Batidão pesado\n🪕 Sertanejo - Modão raiz\n🎻 Clássica - Orquestra\n\nDigite o estilo!";
           }
-          else if (msgLower.includes('oi') || msgLower.includes('olá')) {
-            response = userName ? `Oi, ${userName}! 👋 Tudo bem?` : "Oi! 👋 Qual é o seu nome?";
-            if (!userName) conversationState = 'WAITING_NAME';
+          else if (msgLower.includes('oi') || msgLower.includes('olá') || msgLower.includes('ola') || msgLower.includes('hey') || msgLower.includes('eai')) {
+            if (userName) {
+              const saudacoes = [
+                `Oi, ${userName}! 👋 Como vai você?`,
+                `Olá, ${userName}! 😊 Tudo bem?`,
+                `E aí, ${userName}! 🎉 Pronto para uma conversa?`,
+                `Fala, ${userName}! 🚀 No que posso ajudar?`
+              ];
+              response = saudacoes[Math.floor(Math.random() * saudacoes.length)];
+            } else {
+              response = "Olá! 👋 Seja muito bem-vindo!\n\nEu sou seu assistente virtual e posso ajudar com muitas coisas!\n\nPara começar, qual é o seu nome? 😊";
+              conversationState = 'WAITING_NAME';
+            }
           }
           else if (msgLower.includes('hora') || msgLower.includes('horas')) {
-            response = `⏰ Agora são ${new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute: '2-digit'})}.`;
+            const now = new Date();
+            const hora = now.toLocaleTimeString('pt-BR', {hour: '2-digit', minute: '2-digit', second: '2-digit'});
+            response = `⏰ Agora são exatamente ${hora}`;
           }
           else if (msgLower.includes('data') || msgLower.includes('dia')) {
-            response = `📅 Hoje é ${new Date().toLocaleDateString('pt-BR', {weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'})}.`;
+            const now = new Date();
+            const data = now.toLocaleDateString('pt-BR', {weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'});
+            response = `📅 Hoje é ${data}`;
           }
-          else if (msgLower.includes('piada')) {
+          else if (msgLower.includes('piada') || msgLower.includes('graça') || msgLower.includes('engraçado')) {
             const piadas = [
-              "😂 Por que o livro de matemática ficou triste? Porque tinha muitos problemas!",
-              "😄 Por que o computador foi ao médico? Estava com vírus!",
-              "🤣 O que o zero disse para o oito? Que cinto maneiro!",
-              "😆 Por que a galinha atravessou a estrada? Para chegar do outro lado!"
+              "😂 Por que o livro de matemática ficou triste?\nPorque ele tinha muitos problemas!",
+              "😄 Por que o computador foi ao médico?\nPorque estava com vírus!",
+              "🤣 O que o zero disse para o oito?\nQue cinto maneiro!",
+              "😆 Por que a galinha atravessou a estrada?\nPara chegar do outro lado!",
+              "😂 Qual é o contrário de volátil?\nVem cá sobrinho!",
+              "🤣 Por que o átomo foi preso?\nPorque ele agrediu com íons!",
+              "😄 O que o pato disse para a pata?\nVem quá!",
+              "😆 Por que o elefante não usa computador?\nPorque tem medo do mouse!"
             ];
             response = piadas[Math.floor(Math.random() * piadas.length)];
           }
-          else if (msgLower.includes('obrigad')) {
-            response = "😊 Por nada! Estou aqui para ajudar!";
+          else if (msgLower.includes('obrigad') || msgLower.includes('valeu') || msgLower.includes('vlw')) {
+            const respostas = [
+              "😊 Por nada! Estou sempre aqui para ajudar!",
+              "🎉 Disponha! É um prazer ajudar você!",
+              "💙 Que isso! Conte comigo sempre!",
+              "✨ Fico feliz em poder ajudar!"
+            ];
+            response = respostas[Math.floor(Math.random() * respostas.length)];
           }
-          else if (msgLower.includes('tchau') || msgLower.includes('até')) {
-            response = "👋 Até logo! Volte sempre!";
+          else if (msgLower.includes('tchau') || msgLower.includes('até') || msgLower.includes('adeus') || msgLower.includes('flw')) {
+            const despedidas = [
+              "👋 Até logo! Volte sempre que precisar!",
+              "😊 Tchau! Foi ótimo conversar com você!",
+              "🎉 Até a próxima! Estarei aqui quando precisar!",
+              "💙 Até breve! Cuide-se!"
+            ];
+            response = despedidas[Math.floor(Math.random() * despedidas.length)];
+          }
+          else if (msgLower.includes('quem criou') || msgLower.includes('quem fez') || msgLower.includes('sobre você') || msgLower.includes('quem é você')) {
+            response = "🤖 Sobre Mim:\n\nSou um assistente virtual desenvolvido pelo aluno João Gabriel Marinho! 👨‍💻\n\nFui criado com tecnologias web modernas (HTML, CSS e JavaScript) e tenho várias funcionalidades incríveis:\n\n✨ Reconhecimento e síntese de voz\n🧮 Calculadora avançada\n📖 Gerador de histórias criativas\n🎵 Compositor de músicas\n🌡️ Consulta de clima\n💾 Memória de conversas\n\n👤 Criador: João Gabriel Marinho\n💻 Tecnologias: HTML5, CSS3, JavaScript\n\nEstou aqui para ajudar, aprender e tornar sua experiência mais divertida! 🚀";
+          }
+          else if (msgLower.includes('ajuda') || msgLower.includes('help') || msgLower.includes('comandos') || msgLower.includes('o que você faz')) {
+            response = "🎯 Como posso ajudar:\n\n🧮 CÁLCULOS:\n• Digite operações: 50+50, 10*5\n• Porcentagens: 20% de 100\n• Avançado: √25, 2^3, 5!\n\n🌡️ CLIMA:\n• 'Qual a temperatura?'\n• 'Clima em São Paulo'\n\n📖 HISTÓRIAS:\n• 'Conte uma história'\n• Escolha tema e personagens\n\n🎵 MÚSICAS:\n• 'Crie uma música'\n• Escolha estilo e tema\n\n⏰ UTILITÁRIOS:\n• Hora atual\n• Data de hoje\n• Piadas\n\nExperimente! 😊";
           }
           else if (!userName) {
             conversationState = 'WAITING_NAME';
-            response = "😊 Olá! Qual é o seu nome?";
+            response = "😊 Olá! Para começarmos, qual é o seu nome?\n\n(Digite apenas letras, por favor!)";
           }
           else {
-            response = "🤖 Ainda estou aprendendo! Tente perguntar sobre hora, data, clima, cálculos, histórias ou músicas!";
+            const respostas = [
+              `🤔 Hmm, não entendi muito bem, ${userName}.\n\nTente perguntar sobre:\n• Hora ou data\n• Clima\n• Cálculos matemáticos\n• Histórias criativas\n• Músicas originais\n• Ou digite 'ajuda' para ver todos os comandos!`,
+              `Desculpe, ${userName}, ainda estou aprendendo! 🎓\n\nPosso ajudar com cálculos, clima, histórias, músicas e muito mais!\n\nQue tal tentar um dos botões acima? 😊`,
+              `Não entendi essa, ${userName}! 😅\n\nDigite 'ajuda' para ver tudo que eu posso fazer!`
+            ];
+            response = respostas[Math.floor(Math.random() * respostas.length)];
           }
         }
     }
