@@ -1,0 +1,532 @@
+import React, { useState, useEffect, useRef } from 'react';
+
+export default function AssistenteIA() {
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [showRegister, setShowRegister] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [showAdmin, setShowAdmin] = useState(false);
+  const [userLogs, setUserLogs] = useState([]);
+  const [users, setUsers] = useState({ admin: 'admin123', user: '12345' });
+  const messagesEndRef = useRef(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const addMessage = (text, isUser = false) => {
+    const newMsg = { text, isUser, id: Date.now() };
+    setMessages(prev => [...prev, newMsg]);
+    
+    if (isUser && currentUser) {
+      const log = {
+        time: new Date().toLocaleString('pt-BR'),
+        message: text,
+        userId: currentUser.name,
+        timestamp: Date.now()
+      };
+      setUserLogs(prev => [...prev, log]);
+    }
+  };
+
+  const handleGoogleLogin = () => {
+    const email = prompt('🔐 Login com Google (Simulação)\n\nDigite seu email do Gmail:');
+    
+    if (!email) return;
+    
+    if (!email.includes('@')) {
+      alert('❌ Por favor, digite um email válido!');
+      return;
+    }
+    
+    const name = email.split('@')[0].replace(/[._-]/g, ' ');
+    const capitalizedName = name.split(' ').map(word => 
+      word.charAt(0).toUpperCase() + word.slice(1)
+    ).join(' ');
+    
+    const googleUser = {
+      email: email,
+      name: capitalizedName,
+      picture: `https://ui-avatars.com/api/?name=${encodeURIComponent(capitalizedName)}&background=4285F4&color=fff&size=128`,
+      isGoogle: true
+    };
+    
+    setCurrentUser(googleUser);
+    setIsLoggedIn(true);
+    setMessages([{ 
+      text: `🎉 Bem-vindo, ${capitalizedName}! Login realizado com Google.\n\nComo posso ajudar hoje?`, 
+      isUser: false, 
+      id: Date.now() 
+    }]);
+  };
+
+  const handleLogin = (e) => {
+    e.preventDefault();
+    const username = e.target.username.value;
+    const password = e.target.password.value;
+
+    if (!username || !password) {
+      alert('❌ Preencha todos os campos!');
+      return;
+    }
+
+    if (!users[username]) {
+      alert('❌ Usuário não encontrado!');
+      return;
+    }
+
+    if (users[username] !== password) {
+      alert('❌ Senha incorreta!');
+      return;
+    }
+
+    setCurrentUser({ name: username, isAdmin: username === 'admin' });
+    setIsLoggedIn(true);
+    setMessages([{ 
+      text: `🎉 Bem-vindo, ${username}! Como posso ajudar hoje?`, 
+      isUser: false, 
+      id: Date.now() 
+    }]);
+  };
+
+  const handleRegister = (e) => {
+    e.preventDefault();
+    const username = e.target.regUsername.value;
+    const password = e.target.regPassword.value;
+    const password2 = e.target.regPassword2.value;
+
+    if (!username || !password || !password2) {
+      alert('❌ Preencha todos os campos!');
+      return;
+    }
+
+    if (username.length < 3) {
+      alert('❌ Usuário deve ter no mínimo 3 caracteres!');
+      return;
+    }
+
+    if (password.length < 4) {
+      alert('❌ Senha deve ter no mínimo 4 caracteres!');
+      return;
+    }
+
+    if (password !== password2) {
+      alert('❌ As senhas não coincidem!');
+      return;
+    }
+
+    if (users[username]) {
+      alert('❌ Usuário já existe!');
+      return;
+    }
+
+    setUsers(prev => ({ ...prev, [username]: password }));
+    alert('✅ Cadastro realizado! Faça login agora.');
+    setShowRegister(false);
+  };
+
+  const processLocalResponse = (text) => {
+    const t = text.toLowerCase().trim();
+
+    if (/^(oi|olá|hello|hi|ola)/.test(t)) {
+      return 'Oi! Como vai? 😊 Pergunte qualquer coisa!';
+    }
+
+    if (/(que horas|hora|time)/.test(t)) {
+      return 'Agora são ' + new Date().toLocaleTimeString() + ' ⏰';
+    }
+
+    if (/(que dia|data|date)/.test(t)) {
+      return 'Hoje é ' + new Date().toLocaleDateString('pt-BR', { 
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
+      }) + ' 📅';
+    }
+
+    if (/piada|joke/.test(t)) {
+      const piadas = [
+        'Por que o livro de matemática ficou triste?\nPorque tinha muitos problemas! 😄',
+        'O que o pato disse para a pata?\nVem quá! 🦆',
+        'Por que a galinha atravessou a rua?\nPara chegar do outro lado! 🐔',
+        'O que é um pontinho amarelo no céu?\nUm Yellowcóptero! 🚁'
+      ];
+      return piadas[Math.floor(Math.random() * piadas.length)];
+    }
+
+    if (/(história|historia|story|conte)/.test(t)) {
+      return 'Era uma vez um assistente virtual muito inteligente que adorava ajudar as pessoas! Ele respondia todas as perguntas com carinho e nunca se cansava de aprender coisas novas... 📖✨';
+    }
+
+    if (/(quem|criou|você|sobre|who)/.test(t)) {
+      return 'Eu sou um assistente virtual criado com React e IA! Posso responder perguntas, fazer cálculos, contar piadas e muito mais! 🤖💡';
+    }
+
+    const calcMatch = t.match(/(\d+)\s*([+\-*/%])\s*(\d+)/);
+    if (calcMatch) {
+      const a = parseFloat(calcMatch[1]);
+      const op = calcMatch[2];
+      const b = parseFloat(calcMatch[3]);
+      let r;
+
+      if (op === '+') r = a + b;
+      else if (op === '-') r = a - b;
+      else if (op === '*') r = a * b;
+      else if (op === '/' && b !== 0) r = a / b;
+      else if (op === '/' && b === 0) return 'Erro: Não posso dividir por zero! 🚫';
+      else if (op === '%') r = a % b;
+
+      return `Resultado: ${r} 🧮`;
+    }
+
+    if (t.includes('programa') || t.includes('código') || t.includes('code')) {
+      if (t.includes('calculadora')) {
+        return `💻 Aqui está uma CALCULADORA em Python:
+
+\`\`\`python
+def calculadora():
+    num1 = float(input("Primeiro número: "))
+    op = input("Operação (+, -, *, /): ")
+    num2 = float(input("Segundo número: "))
+    
+    if op == '+': resultado = num1 + num2
+    elif op == '-': resultado = num1 - num2
+    elif op == '*': resultado = num1 * num2
+    elif op == '/': resultado = num1 / num2 if num2 != 0 else "Erro!"
+    
+    print(f"Resultado: {resultado}")
+\`\`\`
+
+🔥 Pronto para usar! 🚀`;
+      }
+
+      return `💻 Posso programar em:
+🐍 Python - "programa uma calculadora"
+📱 JavaScript - "código de jogo"
+🌐 HTML/CSS - "cria um site"
+
+Pede aí que eu codifico! 🚀`;
+    }
+
+    return '🤖 Sou um assistente virtual! Posso ajudar com:\n• Hora e data\n• Cálculos matemáticos\n• Piadas e histórias\n• Programação\n• E muito mais!\n\n💡 Experimente: "que horas são?" ou "10 + 5"';
+  };
+
+  const sendMessage = async () => {
+    if (!input.trim()) return;
+
+    const userMessage = input;
+    setInput('');
+    addMessage(userMessage, true);
+    setLoading(true);
+
+    setTimeout(() => {
+      const response = processLocalResponse(userMessage);
+      addMessage(response, false);
+      setLoading(false);
+    }, 800);
+  };
+
+  const quickAction = (action) => {
+    const actions = {
+      oi: 'Oi',
+      hora: 'Que horas são?',
+      data: 'Qual a data?',
+      piada: 'Me conte uma piada',
+      calc: '25 * 4',
+      historia: 'Conte uma história',
+      sobre: 'Quem criou você?'
+    };
+    setInput(actions[action]);
+  };
+
+  const clearChat = () => {
+    if (window.confirm('Deseja limpar todo o chat?')) {
+      setMessages([{ 
+        text: 'Chat limpo! Como posso ajudar? 🤖', 
+        isUser: false, 
+        id: Date.now() 
+      }]);
+    }
+  };
+
+  const logout = () => {
+    setIsLoggedIn(false);
+    setCurrentUser(null);
+    setMessages([]);
+    setShowAdmin(false);
+  };
+
+  if (!isLoggedIn) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 flex items-center justify-center p-4">
+        <div className="bg-gradient-to-br from-slate-800 to-slate-900 p-8 rounded-3xl border-2 border-blue-500 shadow-2xl max-w-md w-full">
+          <h2 className="text-3xl font-bold text-blue-400 mb-2 text-center">🔐 Login</h2>
+          <p className="text-slate-400 text-center mb-6">Faça login para usar o assistente</p>
+
+          <button
+            onClick={handleGoogleLogin}
+            className="w-full bg-white text-gray-700 py-3 px-4 rounded-xl font-semibold mb-6 hover:shadow-lg transition-all flex items-center justify-center gap-3"
+          >
+            <svg width="18" height="18" viewBox="0 0 18 18">
+              <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/>
+              <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/>
+              <path fill="#FBBC05" d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.961H.957C.347 6.175 0 7.55 0 9s.348 2.825.957 4.039l3.007-2.332z"/>
+              <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.961L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/>
+            </svg>
+            Entrar com Google
+          </button>
+
+          <div className="flex items-center gap-3 mb-6">
+            <div className="flex-1 border-t border-slate-600"></div>
+            <span className="text-slate-400 text-sm">ou</span>
+            <div className="flex-1 border-t border-slate-600"></div>
+          </div>
+
+          {!showRegister ? (
+            <form onSubmit={handleLogin} className="space-y-4">
+              <input
+                name="username"
+                type="text"
+                placeholder="Usuário"
+                className="w-full px-4 py-3 rounded-xl bg-slate-900 border-2 border-blue-500 text-slate-200 focus:border-blue-400 focus:outline-none"
+              />
+              <input
+                name="password"
+                type="password"
+                placeholder="Senha"
+                className="w-full px-4 py-3 rounded-xl bg-slate-900 border-2 border-blue-500 text-slate-200 focus:border-blue-400 focus:outline-none"
+              />
+              <button
+                type="submit"
+                className="w-full bg-gradient-to-r from-blue-600 to-blue-500 text-white py-3 rounded-xl font-semibold hover:from-blue-500 hover:to-blue-400 transition-all"
+              >
+                Entrar
+              </button>
+              <p className="text-center">
+                <span
+                  onClick={() => setShowRegister(true)}
+                  className="text-blue-400 cursor-pointer hover:text-blue-300 text-sm underline"
+                >
+                  Não tem conta? Cadastre-se
+                </span>
+              </p>
+            </form>
+          ) : (
+            <form onSubmit={handleRegister} className="space-y-4">
+              <input
+                name="regUsername"
+                type="text"
+                placeholder="Escolha um usuário"
+                className="w-full px-4 py-3 rounded-xl bg-slate-900 border-2 border-blue-500 text-slate-200 focus:border-blue-400 focus:outline-none"
+              />
+              <input
+                name="regPassword"
+                type="password"
+                placeholder="Escolha uma senha"
+                className="w-full px-4 py-3 rounded-xl bg-slate-900 border-2 border-blue-500 text-slate-200 focus:border-blue-400 focus:outline-none"
+              />
+              <input
+                name="regPassword2"
+                type="password"
+                placeholder="Confirme a senha"
+                className="w-full px-4 py-3 rounded-xl bg-slate-900 border-2 border-blue-500 text-slate-200 focus:border-blue-400 focus:outline-none"
+              />
+              <button
+                type="submit"
+                className="w-full bg-gradient-to-r from-blue-600 to-blue-500 text-white py-3 rounded-xl font-semibold hover:from-blue-500 hover:to-blue-400 transition-all"
+              >
+                Cadastrar
+              </button>
+              <p className="text-center">
+                <span
+                  onClick={() => setShowRegister(false)}
+                  className="text-blue-400 cursor-pointer hover:text-blue-300 text-sm underline"
+                >
+                  Já tem conta? Faça login
+                </span>
+              </p>
+            </form>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col h-screen bg-gradient-to-br from-slate-900 to-slate-800 text-slate-100">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-blue-700 to-blue-600 p-4 shadow-lg flex items-center gap-3">
+        <div className="text-3xl">🤖</div>
+        <div className="flex-1">
+          <h1 className="text-xl font-bold">Assistente Virtual com IA</h1>
+          <p className="text-xs opacity-90">Powered by React + Google Gemini</p>
+        </div>
+        <div className="flex items-center gap-3 bg-purple-500/20 px-3 py-2 rounded-full border border-purple-400">
+          {currentUser?.picture && (
+            <img src={currentUser.picture} alt="Avatar" className="w-8 h-8 rounded-full" />
+          )}
+          <span className="text-sm">👤 {currentUser?.name}</span>
+          <button
+            onClick={logout}
+            className="bg-red-500 hover:bg-red-600 px-3 py-1 rounded-lg text-xs transition-all"
+          >
+            Sair
+          </button>
+        </div>
+      </div>
+
+      {/* Quick Actions */}
+      <div className="flex gap-2 p-3 bg-slate-800 overflow-x-auto border-b-2 border-blue-500">
+        {[
+          { key: 'oi', icon: '👋', label: 'Saudar' },
+          { key: 'hora', icon: '⏰', label: 'Hora' },
+          { key: 'data', icon: '📅', label: 'Data' },
+          { key: 'piada', icon: '😄', label: 'Piada' },
+          { key: 'calc', icon: '🧮', label: 'Calcular' },
+          { key: 'historia', icon: '📖', label: 'História' },
+          { key: 'sobre', icon: 'ℹ️', label: 'Sobre' }
+        ].map(action => (
+          <button
+            key={action.key}
+            onClick={() => quickAction(action.key)}
+            className="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-full text-sm whitespace-nowrap transition-all hover:scale-105"
+          >
+            {action.icon} {action.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {messages.map((msg) => (
+          <div
+            key={msg.id}
+            className={`flex gap-3 ${msg.isUser ? 'flex-row-reverse' : 'flex-row'} animate-fadeIn`}
+          >
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center text-xl flex-shrink-0 ${
+              msg.isUser ? 'bg-gradient-to-br from-purple-600 to-indigo-600' : 'bg-gradient-to-br from-cyan-600 to-cyan-700'
+            }`}>
+              {msg.isUser ? '👤' : '🤖'}
+            </div>
+            <div className={`max-w-[70%] px-4 py-3 rounded-2xl shadow-lg ${
+              msg.isUser 
+                ? 'bg-gradient-to-br from-purple-600 to-indigo-600 rounded-br-sm' 
+                : 'bg-slate-800 border border-blue-500 rounded-bl-sm'
+            }`}>
+              <p className="whitespace-pre-line text-sm leading-relaxed">{msg.text}</p>
+            </div>
+          </div>
+        ))}
+
+        {loading && (
+          <div className="flex gap-3">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-600 to-cyan-700 flex items-center justify-center text-xl">
+              🤖
+            </div>
+            <div className="flex gap-2 items-center px-4 py-3">
+              <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+              <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '200ms' }}></div>
+              <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '400ms' }}></div>
+            </div>
+          </div>
+        )}
+        <div ref={messagesEndRef} />
+      </div>
+
+      {/* Input Area */}
+      <div className="p-3 bg-slate-800 border-t-2 border-blue-500 flex gap-2">
+        <input
+          type="text"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
+          placeholder="Digite sua pergunta..."
+          className="flex-1 px-4 py-3 rounded-full bg-slate-900 border-2 border-blue-500 focus:border-blue-400 outline-none text-slate-100"
+        />
+        <button
+          onClick={sendMessage}
+          disabled={loading || !input.trim()}
+          className="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 px-6 py-3 rounded-full font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105"
+        >
+          Enviar
+        </button>
+      </div>
+
+      {/* Floating Buttons */}
+      <button
+        onClick={clearChat}
+        className="fixed bottom-24 right-4 w-14 h-14 bg-gradient-to-br from-red-600 to-red-500 rounded-full shadow-lg hover:scale-110 transition-all flex items-center justify-center text-2xl"
+        title="Limpar chat"
+      >
+        🗑️
+      </button>
+
+      {currentUser?.isAdmin && (
+        <button
+          onClick={() => setShowAdmin(!showAdmin)}
+          className="fixed bottom-40 right-4 w-14 h-14 bg-gradient-to-br from-purple-600 to-purple-500 rounded-full shadow-lg hover:scale-110 transition-all flex items-center justify-center text-2xl"
+          title="Painel Admin"
+        >
+          👁️
+        </button>
+      )}
+
+      {/* Admin Panel */}
+      {showAdmin && currentUser?.isAdmin && (
+        <div className="fixed top-0 right-0 w-96 h-full bg-slate-800 border-l-2 border-blue-500 shadow-2xl p-6 overflow-y-auto animate-slideIn">
+          <div className="flex justify-between items-center mb-6 pb-4 border-b-2 border-blue-500">
+            <h2 className="text-2xl font-bold text-blue-400">📊 Painel Admin</h2>
+            <button
+              onClick={() => setShowAdmin(false)}
+              className="w-8 h-8 bg-red-500 rounded-full hover:bg-red-600 transition-all"
+            >
+              ✕
+            </button>
+          </div>
+
+          <div className="bg-blue-600 p-3 rounded-lg mb-4 text-center">
+            <strong>📊 Total de mensagens: {userLogs.length}</strong>
+          </div>
+
+          {userLogs.length === 0 ? (
+            <p className="text-slate-400 text-center mt-8">
+              📭 Nenhuma mensagem ainda...<br/><br/>
+              <small>As mensagens aparecem aqui quando usuários enviarem!</small>
+            </p>
+          ) : (
+            <div className="space-y-3">
+              {[...userLogs].reverse().map((log, i) => (
+                <div key={i} className="bg-slate-900 p-3 rounded-lg border-l-4 border-blue-500">
+                  <div className="text-blue-400 text-xs mb-1">📅 {log.time}</div>
+                  <div className="text-purple-400 font-bold mb-1 text-sm">👤 {log.userId}</div>
+                  <div className="text-slate-200 text-sm break-words">💬 {log.message}</div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      <style jsx>{`
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slideIn {
+          from { transform: translateX(100%); }
+          to { transform: translateX(0); }
+        }
+        .animate-fadeIn {
+          animation: fadeIn 0.3s ease;
+        }
+        .animate-slideIn {
+          animation: slideIn 0.3s ease;
+        }
+      `}</style>
+    </div>
+  );
+}
