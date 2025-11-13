@@ -1,0 +1,1241 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Assistente Virtual com IA</title>
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  color: #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.header {
+  padding: 15px;
+  background: linear-gradient(135deg, #1e40af, #3b82f6);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+}
+
+.logo {
+  font-size: 28px;
+}
+
+.header-title {
+  flex: 1;
+}
+
+.header-title h1 {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.header-title p {
+  font-size: 12px;
+  opacity: 0.9;
+}
+
+.status {
+  margin-left: auto;
+  font-size: 12px;
+  padding: 5px 10px;
+  border-radius: 15px;
+  background: rgba(16, 185, 129, 0.2);
+  border: 1px solid #10b981;
+}
+
+.quickActions {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 10px;
+  background: #1e293b;
+  border-bottom: 2px solid #3b82f6;
+}
+
+.quickActions button {
+  padding: 8px 14px;
+  border: none;
+  border-radius: 15px;
+  background: #2563eb;
+  color: white;
+  font-size: 12px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.quickActions button:hover {
+  background: #3b82f6;
+  transform: translateY(-2px);
+}
+
+.messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 15px;
+  padding-bottom: 100px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.msg-wrapper {
+  display: flex;
+  gap: 10px;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.msg-wrapper.me {
+  flex-direction: row-reverse;
+}
+
+.avatar {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+.avatar.user {
+  background: linear-gradient(135deg, #8b5cf6, #6366f1);
+}
+
+.avatar.bot {
+  background: linear-gradient(135deg, #06b6d4, #0891b2);
+}
+
+.msg {
+  padding: 12px 16px;
+  border-radius: 18px;
+  max-width: 70%;
+  font-size: 14px;
+  line-height: 1.6;
+  word-wrap: break-word;
+  white-space: pre-line;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.msg-wrapper.me .msg {
+  background: linear-gradient(135deg, #8b5cf6, #6366f1);
+  color: white;
+  border-bottom-right-radius: 4px;
+}
+
+.msg-wrapper.bot .msg {
+  background: #1e293b;
+  color: #e2e8f0;
+  border: 1px solid #3b82f6;
+  border-bottom-left-radius: 4px;
+}
+
+.typing {
+  display: flex;
+  gap: 4px;
+  padding: 12px;
+}
+
+.typing span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #3b82f6;
+  animation: bounce 1.4s infinite;
+}
+
+.typing span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.typing span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes bounce {
+  0%, 60%, 100% {
+    transform: translateY(0);
+  }
+  30% {
+    transform: translateY(-10px);
+  }
+}
+
+.inputArea {
+  display: flex;
+  padding: 10px;
+  gap: 8px;
+  background: #1e293b;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  border-top: 2px solid #3b82f6;
+}
+
+.inputArea input {
+  flex: 1;
+  padding: 12px 16px;
+  border-radius: 20px;
+  border: 2px solid #3b82f6;
+  background: #0f172a;
+  color: #e2e8f0;
+  font-size: 14px;
+  outline: none;
+  transition: all 0.3s;
+}
+
+.inputArea input:focus {
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.inputArea button {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: white;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.inputArea button:hover:not(:disabled) {
+  background: linear-gradient(135deg, #60a5fa, #3b82f6);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+}
+
+.inputArea button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.clear-btn {
+  position: fixed;
+  bottom: 80px;
+  right: 15px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  border: none;
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+  z-index: 10;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+  transition: all 0.3s;
+}
+
+.clear-btn:hover {
+  background: linear-gradient(135deg, #f87171, #ef4444);
+  transform: scale(1.1) rotate(90deg);
+  box-shadow: 0 6px 16px rgba(239, 68, 68, 0.5);
+}
+
+.admin-btn {
+  position: fixed;
+  bottom: 140px;
+  right: 15px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #8b5cf6, #6366f1);
+  border: none;
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+  z-index: 10;
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+  transition: all 0.3s;
+  display: none;
+}
+
+.admin-btn:hover {
+  background: linear-gradient(135deg, #a78bfa, #8b5cf6);
+  transform: scale(1.1);
+  box-shadow: 0 6px 16px rgba(139, 92, 246, 0.5);
+}
+
+.admin-panel {
+  position: fixed;
+  top: 0;
+  right: -400px;
+  width: 400px;
+  height: 100vh;
+  background: #1e293b;
+  border-left: 2px solid #3b82f6;
+  box-shadow: -4px 0 20px rgba(0,0,0,0.5);
+  transition: right 0.3s;
+  z-index: 1000;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+.admin-panel.active {
+  right: 0;
+}
+
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #3b82f6;
+}
+
+.admin-header h2 {
+  color: #60a5fa;
+  font-size: 20px;
+}
+
+.close-admin {
+  background: #ef4444;
+  border: none;
+  color: white;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+.log-item {
+  background: #0f172a;
+  padding: 12px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  border-left: 3px solid #3b82f6;
+}
+
+.log-time {
+  color: #60a5fa;
+  font-size: 11px;
+  margin-bottom: 5px;
+}
+
+.log-user {
+  color: #8b5cf6;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.log-msg {
+  color: #e2e8f0;
+  font-size: 14px;
+  word-wrap: break-word;
+}
+
+.login-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.login-overlay.hidden {
+  display: none;
+}
+
+.login-box {
+  background: linear-gradient(135deg, #1e293b, #0f172a);
+  padding: 40px;
+  border-radius: 20px;
+  border: 2px solid #3b82f6;
+  box-shadow: 0 10px 40px rgba(59, 130, 246, 0.5);
+  text-align: center;
+  max-width: 400px;
+  width: 90%;
+}
+
+.login-box h2 {
+  color: #60a5fa;
+  margin-bottom: 10px;
+  font-size: 28px;
+}
+
+.login-box p {
+  color: #94a3b8;
+  margin-bottom: 30px;
+  font-size: 14px;
+}
+
+.login-box input {
+  width: 100%;
+  padding: 15px;
+  margin-bottom: 15px;
+  border-radius: 10px;
+  border: 2px solid #3b82f6;
+  background: #0f172a;
+  color: #e2e8f0;
+  font-size: 14px;
+  outline: none;
+}
+
+.login-box input:focus {
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+.login-box button {
+  width: 100%;
+  padding: 15px;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 10px;
+  transition: all 0.3s;
+}
+
+.login-box button:hover {
+  background: linear-gradient(135deg, #60a5fa, #3b82f6);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+}
+
+.login-toggle {
+  color: #60a5fa;
+  cursor: pointer;
+  text-decoration: underline;
+  font-size: 14px;
+  margin-top: 15px;
+  display: inline-block;
+}
+
+.login-toggle:hover {
+  color: #93c5fd;
+}
+
+.error-msg {
+  color: #ef4444;
+  font-size: 13px;
+  margin-top: 10px;
+  display: none;
+}
+
+.success-msg {
+  color: #10b981;
+  font-size: 13px;
+  margin-top: 10px;
+  display: none;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  padding: 6px 12px;
+  background: rgba(139, 92, 246, 0.2);
+  border-radius: 15px;
+  border: 1px solid #8b5cf6;
+  font-size: 12px;
+}
+
+.logout-btn {
+  background: #ef4444;
+  border: none;
+  color: white;
+  padding: 4px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 11px;
+  margin-left: 8px;
+}
+
+.logout-btn:hover {
+  background: #dc2626;
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">🤖</div>
+  <div class="header-title">
+    <h1>Assistente Virtual com IA</h1>
+    <p>Powered by Google Gemini</p>
+  </div>
+  <div class="status">● Online</div>
+  <div id="userInfo" class="user-info" style="display: none;">
+    👤 <span id="username"></span>
+    <button class="logout-btn" onclick="logout()">Sair</button>
+  </div>
+</div>
+
+<div id="loginOverlay" class="login-overlay">
+  <div class="login-box">
+    <h2>🔐 Login</h2>
+    <p>Faça login para usar o assistente</p>
+    
+    <div id="loginForm">
+      <input type="text" id="loginUser" placeholder="Usuário">
+      <input type="password" id="loginPass" placeholder="Senha">
+      <button onclick="doLogin()">Entrar</button>
+      <div id="errorMsg" class="error-msg"></div>
+      <span class="login-toggle" onclick="toggleForm()">Não tem conta? Cadastre-se</span>
+    </div>
+    
+    <div id="registerForm" style="display: none;">
+      <input type="text" id="regUser" placeholder="Escolha um usuário">
+      <input type="password" id="regPass" placeholder="Escolha uma senha">
+      <input type="password" id="regPass2" placeholder="Confirme a senha">
+      <button onclick="doRegister()">Cadastrar</button>
+      <div id="successMsg" class="success-msg"></div>
+      <div id="regErrorMsg" class="error-msg"></div>
+      <span class="login-toggle" onclick="toggleForm()">Já tem conta? Faça login</span>
+    </div>
+  </div>
+</div>
+
+<div class="quickActions">
+  <button onclick="sq('oi')">👋 Saudar</button>
+  <button onclick="sq('hora')">⏰ Hora</button>
+  <button onclick="sq('data')">📅 Data</button>
+  <button onclick="sq('piada')">😄 Piada</button>
+  <button onclick="sq('calc')">🧮 Calcular</button>
+  <button onclick="sq('historia')">📖 História</button>
+  <button onclick="sq('sobre')">ℹ️ Sobre</button>
+</div>
+
+<div id="msg" class="messages"></div>
+
+<button class="clear-btn" onclick="limpar()">🗑️</button>
+<button class="admin-btn" onclick="toggleAdmin()">👁️</button>
+
+<div id="adminPanel" class="admin-panel">
+  <div class="admin-header">
+    <h2>📊 Painel Admin</h2>
+    <button class="close-admin" onclick="toggleAdmin()">✕</button>
+  </div>
+  <div id="adminLogs"></div>
+</div>
+
+<div class="inputArea">
+  <input id="inp" placeholder="Digite sua pergunta...">
+  <button id="btn">Enviar</button>
+</div>
+
+<script>
+const msg = document.getElementById('msg');
+const inp = document.getElementById('inp');
+const btn = document.getElementById('btn');
+const adminPanel = document.getElementById('adminPanel');
+const adminLogs = document.getElementById('adminLogs');
+const loginOverlay = document.getElementById('loginOverlay');
+const userInfo = document.getElementById('userInfo');
+const usernameDisplay = document.getElementById('username');
+
+const GEMINI_KEY = 'AIzaSyAyIIBj2Kf3SRrlhXbNXB_9b11pSSttHB4';
+const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent';
+
+let userLogs = [];
+let usuarios = {
+  'admin': 'admin123',
+  'user': '12345'
+};
+let currentUser = null;
+
+function add(txt, user = false) {
+  const w = document.createElement('div');
+  w.className = `msg-wrapper ${user ? 'me' : 'bot'}`;
+  
+  const a = document.createElement('div');
+  a.className = `avatar ${user ? 'user' : 'bot'}`;
+  a.textContent = user ? '👤' : '🤖';
+  
+  const m = document.createElement('div');
+  m.className = 'msg';
+  m.textContent = txt;
+  
+  w.appendChild(a);
+  w.appendChild(m);
+  msg.appendChild(w);
+  msg.scrollTop = msg.scrollHeight;
+  
+  if (user) {
+    const log = {
+      time: new Date().toLocaleString('pt-BR'),
+      message: txt,
+      userId: 'User-' + Math.random().toString(36).substr(2, 9),
+      ip: 'IP-Hidden',
+      timestamp: Date.now()
+    };
+    
+    userLogs.push(log);
+    saveToStorage(log);
+    updateAdminPanel();
+  }
+}
+
+async function saveToStorage(log) {
+  try {
+    if (window.storage) {
+      const key = `msg-${log.timestamp}`;
+      await window.storage.set(key, JSON.stringify(log), true);
+    }
+  } catch (e) {
+    // Ignora erros de storage
+  }
+}
+
+async function loadAllMessages() {
+  try {
+    if (window.storage) {
+      const result = await window.storage.list('msg-', true);
+      if (result && result.keys) {
+        for (let key of result.keys) {
+          try {
+            const data = await window.storage.get(key, true);
+            if (data && data.value) {
+              const log = JSON.parse(data.value);
+              if (!userLogs.find(l => l.timestamp === log.timestamp)) {
+                userLogs.push(log);
+              }
+            }
+          } catch (e) {
+            // Ignora erros
+          }
+        }
+        userLogs.sort((a, b) => b.timestamp - a.timestamp);
+        updateAdminPanel();
+      }
+    }
+  } catch (e) {
+    // Ignora erros de carregamento
+  }
+}
+
+function showTyping() {
+  const w = document.createElement('div');
+  w.id = 'typing';
+  w.className = 'msg-wrapper bot';
+  
+  const a = document.createElement('div');
+  a.className = 'avatar bot';
+  a.textContent = '🤖';
+  
+  const t = document.createElement('div');
+  t.className = 'typing';
+  t.innerHTML = '<span></span><span></span><span></span>';
+  
+  w.appendChild(a);
+  w.appendChild(t);
+  msg.appendChild(w);
+  msg.scrollTop = msg.scrollHeight;
+}
+
+function hideTyping() {
+  const t = document.getElementById('typing');
+  if (t) t.remove();
+}
+
+async function callGemini(txt) {
+  try {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_KEY}`;
+    
+    const response = await fetch(`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        contents: [{
+          parts: [{
+            text: `Responda em português brasileiro de forma amigável, clara e resumida (máximo 200 palavras): ${txt}`
+          }]
+        }],
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 500,
+          topP: 0.8,
+          topK: 40
+        }
+      })
+    });
+
+    const data = await response.json();
+    
+    if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+      return data.candidates[0].content.parts[0].text;
+    }
+    
+    throw new Error('API falhou');
+    
+  } catch (error) {
+    return getFallback(txt);
+  }
+}
+
+function getFallback(txt) {
+  const respostas = {
+    'maior pedra': 'A maior pedra do mundo é o Uluru (Ayers Rock) na Austrália! Tem 348m de altura e 9,4km de perímetro! 🪨',
+    'fotossíntese': 'Fotossíntese é o processo que as plantas usam para transformar luz solar, água e CO2 em energia (glicose) e oxigênio! 🌱☀️',
+    'inteligência artificial': 'IA é quando computadores simulam inteligência humana - aprendem, raciocinam e resolvem problemas! Como eu! 🤖',
+    'brasil': 'Brasil foi descoberto por Pedro Álvares Cabral em 1500. É o maior país da América do Sul! 🇧🇷',
+    'python': 'Python é uma linguagem de programação popular, fácil de aprender e muito usada em IA! 🐍',
+    'água': 'Água cobre 71% da Terra. Fórmula: H2O (2 hidrogênios + 1 oxigênio). Essencial para vida! 💧'
+  };
+  
+  const txtLower = txt.toLowerCase();
+  
+  // MODO PROGRAMAÇÃO! 🔥
+  if (txtLower.includes('programa') || txtLower.includes('código') || txtLower.includes('code')) {
+    
+    // CALCULADORA
+    if (txtLower.includes('calculadora')) {
+      return `💻 Aqui está uma CALCULADORA em Python:
+
+\`\`\`python
+def calculadora():
+    print("=== CALCULADORA ===")
+    num1 = float(input("Digite o primeiro número: "))
+    op = input("Operação (+, -, *, /): ")
+    num2 = float(input("Digite o segundo número: "))
+    
+    if op == '+':
+        resultado = num1 + num2
+    elif op == '-':
+        resultado = num1 - num2
+    elif op == '*':
+        resultado = num1 * num2
+    elif op == '/':
+        resultado = num1 / num2 if num2 != 0 else "Erro!"
+    else:
+        resultado = "Operação inválida!"
+    
+    print(f"Resultado: {resultado}")
+
+calculadora()
+\`\`\`
+
+🔥 Pronto! Cola e roda! 🚀`;
+    }
+    
+    // JOGO DA VELHA
+    if (txtLower.includes('jogo') || txtLower.includes('velha')) {
+      return `💻 Aqui está um JOGO DA VELHA em JavaScript:
+
+\`\`\`javascript
+let board = ['', '', '', '', '', '', '', '', ''];
+let player = 'X';
+
+function play(pos) {
+  if (board[pos] === '') {
+    board[pos] = player;
+    console.log(board);
+    
+    if (checkWin()) {
+      console.log(player + ' GANHOU! 🏆');
+      return;
+    }
+    
+    player = player === 'X' ? 'O' : 'X';
+  }
+}
+
+function checkWin() {
+  const wins = [
+    [0,1,2], [3,4,5], [6,7,8],
+    [0,3,6], [1,4,7], [2,5,8],
+    [0,4,8], [2,4,6]
+  ];
+  
+  for (let w of wins) {
+    if (board[w[0]] && 
+        board[w[0]] === board[w[1]] && 
+        board[w[1]] === board[w[2]]) {
+      return true;
+    }
+  }
+  return false;
+}
+
+// Jogar: play(0), play(1), etc
+\`\`\`
+
+🎮 Pronto pra jogar! 🔥`;
+    }
+    
+    // TODO LIST
+    if (txtLower.includes('todo') || txtLower.includes('lista') || txtLower.includes('tarefas')) {
+      return `💻 Aqui está uma TODO LIST em Python:
+
+\`\`\`python
+tarefas = []
+
+def adicionar(tarefa):
+    tarefas.append({"tarefa": tarefa, "feita": False})
+    print(f"✅ '{tarefa}' adicionada!")
+
+def listar():
+    print("\\n📋 SUAS TAREFAS:")
+    for i, t in enumerate(tarefas):
+        status = "✓" if t["feita"] else "○"
+        print(f"{i+1}. [{status}] {t['tarefa']}")
+
+def concluir(numero):
+    tarefas[numero-1]["feita"] = True
+    print(f"🎉 Tarefa {numero} concluída!")
+
+def remover(numero):
+    tarefa = tarefas.pop(numero-1)
+    print(f"🗑️ '{tarefa['tarefa']}' removida!")
+
+# Usar assim:
+# adicionar("Estudar Python")
+# adicionar("Fazer exercícios")
+# listar()
+# concluir(1)
+\`\`\`
+
+📝 Sistema de tarefas completo! 🔥`;
+    }
+    
+    // LOGIN SYSTEM
+    if (txtLower.includes('login') || txtLower.includes('autenticação')) {
+      return `💻 Sistema de LOGIN em Python:
+
+\`\`\`python
+usuarios = {}
+
+def cadastrar(usuario, senha):
+    if usuario in usuarios:
+        return "❌ Usuário já existe!"
+    usuarios[usuario] = senha
+    return "✅ Cadastrado com sucesso!"
+
+def login(usuario, senha):
+    if usuario not in usuarios:
+        return "❌ Usuário não encontrado!"
+    
+    if usuarios[usuario] == senha:
+        return f"🎉 Bem-vindo, {usuario}!"
+    else:
+        return "❌ Senha incorreta!"
+
+# Testar:
+print(cadastrar("admin", "123456"))
+print(login("admin", "123456"))
+\`\`\`
+
+🔐 Sistema de autenticação pronto! 🔥`;
+    }
+    
+    // HTML SITE
+    if (txtLower.includes('site') || txtLower.includes('html') || txtLower.includes('página')) {
+      return `💻 Aqui está um SITE COMPLETO em HTML:
+
+\`\`\`html
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Meu Site</title>
+  <style>
+    body {
+      font-family: Arial;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      text-align: center;
+      padding: 50px;
+    }
+    .card {
+      background: rgba(255,255,255,0.1);
+      padding: 30px;
+      border-radius: 20px;
+      backdrop-filter: blur(10px);
+      max-width: 500px;
+      margin: 0 auto;
+    }
+    button {
+      background: #fff;
+      color: #667eea;
+      border: none;
+      padding: 15px 30px;
+      border-radius: 10px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+    button:hover {
+      transform: scale(1.05);
+      transition: 0.3s;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>🚀 Meu Site Incrível</h1>
+    <p>Bem-vindo ao meu site!</p>
+    <button onclick="alert('Olá!')">Clique Aqui</button>
+  </div>
+</body>
+</html>
+\`\`\`
+
+🌐 Site moderno pronto! 🔥`;
+    }
+    
+    // GENERIC CODE REQUEST
+    return `💻 Posso programar em:
+
+🐍 **Python** - "programa uma calculadora em python"
+📱 **JavaScript** - "código de jogo da velha"
+🌐 **HTML/CSS** - "cria um site"
+📊 **SQL** - "query de banco de dados"
+
+🔥 **Exemplos:**
+• "programa um sistema de login"
+• "código de uma todo list"
+• "cria uma calculadora"
+• "faz um jogo"
+• "site html completo"
+
+Pede aí que eu codifico! 🚀`;
+  }
+  
+  for (let key in respostas) {
+    if (txtLower.includes(key)) {
+      return respostas[key];
+    }
+  }
+  
+  return '🤖 Desculpe! A API do Gemini está com problema de CORS.\n\n💡 Mas posso:\n• Programar (diga "cria um código de...")\n• Maior pedra, fotossíntese, IA, Brasil\n• Hora, data, cálculos, piadas!\n\n💻 Experimente: "programa uma calculadora"';
+}
+
+function procLocal(t) {
+  const l = t.toLowerCase().trim();
+  
+  if (/^(oi|olá|hello|hi|ola)/.test(l)) {
+    return 'Oi! Como vai? 😊 Pergunte qualquer coisa!';
+  }
+  
+  if (/(que horas|hora|time)/.test(l)) {
+    return 'Agora são ' + new Date().toLocaleTimeString() + ' ⏰';
+  }
+  
+  if (/(que dia|data|date)/.test(l)) {
+    return 'Hoje é ' + new Date().toLocaleDateString('pt-BR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) + ' 📅';
+  }
+  
+  if (/piada|joke/.test(l)) {
+    const piadas = [
+      'Por que o livro de matemática ficou triste?\nPorque tinha muitos problemas! 😄',
+      'O que o pato disse para a pata?\nVem quá! 🦆',
+      'Por que a galinha atravessou a rua?\nPara chegar do outro lado! 🐔',
+      'O que é um pontinho amarelo no céu?\nUm Yellowcóptero! 🚁'
+    ];
+    return piadas[Math.floor(Math.random() * piadas.length)];
+  }
+  
+  if (/(história|historia|story|conte)/.test(l)) {
+    return 'Era uma vez um assistente virtual muito inteligente que adorava ajudar as pessoas! Ele respondia todas as perguntas com carinho e nunca se cansava de aprender coisas novas... 📖✨';
+  }
+  
+  if (/(quem|criou|você|sobre|who)/.test(l)) {
+    return 'Eu sou um assistente virtual criado com Google Gemini AI! Posso responder perguntas, fazer cálculos, contar piadas e muito mais! 🤖💡';
+  }
+  
+  const calcMatch = l.match(/(\d+)\s*([+\-*/%])\s*(\d+)/);
+  if (calcMatch) {
+    try {
+      const a = parseFloat(calcMatch[1]);
+      const op = calcMatch[2];
+      const b = parseFloat(calcMatch[3]);
+      let r;
+      
+      if (op === '+') r = a + b;
+      else if (op === '-') r = a - b;
+      else if (op === '*') r = a * b;
+      else if (op === '/' && b !== 0) r = a / b;
+      else if (op === '/' && b === 0) return 'Erro: Não posso dividir por zero! 🚫';
+      else if (op === '%') r = a % b;
+      
+      return `Resultado: ${r} 🧮`;
+    } catch (e) {
+      return 'Erro no cálculo! 😅';
+    }
+  }
+  
+  const pctMatch = l.match(/(\d+)%\s+(?:de|of)\s+(\d+)/);
+  if (pctMatch) {
+    const r = (parseInt(pctMatch[1]) * parseInt(pctMatch[2])) / 100;
+    return `Resultado: ${r} 🧮`;
+  }
+  
+  if (/(obrigad|thanks|valeu)/.test(l)) {
+    return 'Por nada! Estou aqui para ajudar! 😊';
+  }
+  
+  if (/(tchau|bye|adeus)/.test(l)) {
+    return 'Até logo! Foi um prazer ajudar! 👋';
+  }
+  
+  return null;
+}
+
+async function send() {
+  const t = inp.value.trim();
+  if (!t) return;
+  
+  btn.disabled = true;
+  add(t, true);
+  inp.value = '';
+  
+  const localResp = procLocal(t);
+  
+  if (localResp) {
+    setTimeout(() => {
+      add(localResp);
+      btn.disabled = false;
+      inp.focus();
+    }, 500);
+  } else {
+    showTyping();
+    
+    const aiResp = await callGemini(t);
+    
+    hideTyping();
+    add(aiResp);
+    
+    btn.disabled = false;
+    inp.focus();
+  }
+}
+
+function sq(a) {
+  const msgs = {
+    oi: 'Oi',
+    hora: 'Que horas são?',
+    data: 'Qual a data?',
+    piada: 'Me conte uma piada',
+    calc: '25 * 4',
+    historia: 'Conte uma história',
+    sobre: 'Quem criou você?'
+  };
+  
+  inp.value = msgs[a];
+  send();
+}
+
+function limpar() {
+  if (confirm('Deseja limpar todo o chat?')) {
+    msg.innerHTML = '';
+    add('Chat limpo! Como posso ajudar? 🤖');
+  }
+}
+
+function toggleAdmin() {
+  adminPanel.classList.toggle('active');
+}
+
+function updateAdminPanel() {
+  adminLogs.innerHTML = '';
+  
+  if (userLogs.length === 0) {
+    adminLogs.innerHTML = `
+      <p style="color: #94a3b8; text-align: center; margin-top: 20px;">
+        📭 Nenhuma mensagem ainda...<br><br>
+        <small>As mensagens aparecem aqui quando usuários enviarem!</small>
+      </p>`;
+    return;
+  }
+  
+  const total = document.createElement('div');
+  total.style.cssText = 'background: #3b82f6; padding: 10px; border-radius: 8px; margin-bottom: 15px; text-align: center;';
+  total.innerHTML = `<strong>📊 Total de mensagens: ${userLogs.length}</strong>`;
+  adminLogs.appendChild(total);
+  
+  userLogs.slice().reverse().forEach((log, index) => {
+    const item = document.createElement('div');
+    item.className = 'log-item';
+    item.innerHTML = `
+      <div class="log-time">📅 ${log.time}</div>
+      <div class="log-user">👤 ${log.userId}</div>
+      <div class="log-msg">💬 ${log.message}</div>
+    `;
+    adminLogs.appendChild(item);
+  });
+}
+
+btn.addEventListener('click', send);
+inp.addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') send();
+});
+
+function toggleForm() {
+  const loginForm = document.getElementById('loginForm');
+  const registerForm = document.getElementById('registerForm');
+  
+  if (loginForm.style.display === 'none') {
+    loginForm.style.display = 'block';
+    registerForm.style.display = 'none';
+  } else {
+    loginForm.style.display = 'none';
+    registerForm.style.display = 'block';
+  }
+  
+  document.getElementById('errorMsg').style.display = 'none';
+  document.getElementById('regErrorMsg').style.display = 'none';
+  document.getElementById('successMsg').style.display = 'none';
+}
+
+function doLogin() {
+  const user = document.getElementById('loginUser').value.trim();
+  const pass = document.getElementById('loginPass').value;
+  const errorMsg = document.getElementById('errorMsg');
+  
+  if (!user || !pass) {
+    errorMsg.textContent = '❌ Preencha todos os campos!';
+    errorMsg.style.display = 'block';
+    return;
+  }
+  
+  if (!usuarios[user]) {
+    errorMsg.textContent = '❌ Usuário não encontrado!';
+    errorMsg.style.display = 'block';
+    return;
+  }
+  
+  if (usuarios[user] !== pass) {
+    errorMsg.textContent = '❌ Senha incorreta!';
+    errorMsg.style.display = 'block';
+    return;
+  }
+  
+  currentUser = user;
+  loginOverlay.classList.add('hidden');
+  userInfo.style.display = 'flex';
+  usernameDisplay.textContent = user;
+  
+  // Mostra botão admin APENAS para o usuário "admin"
+  const adminBtn = document.querySelector('.admin-btn');
+  if (user === 'admin') {
+    adminBtn.style.display = 'block';
+  } else {
+    adminBtn.style.display = 'none';
+  }
+  
+  add(`🎉 Bem-vindo, ${user}! Como posso ajudar hoje?`);
+}
+
+function doRegister() {
+  const user = document.getElementById('regUser').value.trim();
+  const pass = document.getElementById('regPass').value;
+  const pass2 = document.getElementById('regPass2').value;
+  const errorMsg = document.getElementById('regErrorMsg');
+  const successMsg = document.getElementById('successMsg');
+  
+  errorMsg.style.display = 'none';
+  successMsg.style.display = 'none';
+  
+  if (!user || !pass || !pass2) {
+    errorMsg.textContent = '❌ Preencha todos os campos!';
+    errorMsg.style.display = 'block';
+    return;
+  }
+  
+  if (user.length < 3) {
+    errorMsg.textContent = '❌ Usuário deve ter no mínimo 3 caracteres!';
+    errorMsg.style.display = 'block';
+    return;
+  }
+  
+  if (pass.length < 4) {
+    errorMsg.textContent = '❌ Senha deve ter no mínimo 4 caracteres!';
+    errorMsg.style.display = 'block';
+    return;
+  }
+  
+  if (pass !== pass2) {
+    errorMsg.textContent = '❌ As senhas não coincidem!';
+    errorMsg.style.display = 'block';
+    return;
+  }
+  
+  if (usuarios[user]) {
+    errorMsg.textContent = '❌ Usuário já existe!';
+    errorMsg.style.display = 'block';
+    return;
+  }
+  
+  usuarios[user] = pass;
+  successMsg.textContent = '✅ Cadastro realizado! Faça login agora.';
+  successMsg.style.display = 'block';
+  
+  document.getElementById('regUser').value = '';
+  document.getElementById('regPass').value = '';
+  document.getElementById('regPass2').value = '';
+  
+  setTimeout(() => {
+    toggleForm();
+  }, 2000);
+}
+
+function logout() {
+  currentUser = null;
+  userInfo.style.display = 'none';
+  loginOverlay.classList.remove('hidden');
+  msg.innerHTML = '';
+  
+  // Esconde o botão admin ao fazer logout
+  const adminBtn = document.querySelector('.admin-btn');
+  adminBtn.style.display = 'none';
+  
+  // Fecha o painel admin se estiver aberto
+  adminPanel.classList.remove('active');
+  
+  document.getElementById('loginUser').value = '';
+  document.getElementById('loginPass').value = '';
+}
+
+loadAllMessages();
+
+add('👋 Olá! Sou seu Assistente Virtual com IA!\n\n✨ Pergunte qualquer coisa:\n• Conhecimentos gerais\n• Cálculos matemáticos\n• Hora e data\n• Piadas e histórias\n\n💡 Dica: Se a API não funcionar (CORS), ainda posso fazer cálculos, piadas e mais!');
+</script>
+</body>
+</html>
