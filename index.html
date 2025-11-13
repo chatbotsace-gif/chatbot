@@ -10,6 +10,14 @@ export default function AssistenteIA() {
   const [showAdmin, setShowAdmin] = useState(false);
   const [userLogs, setUserLogs] = useState([]);
   const [users, setUsers] = useState({ admin: 'admin123', user: '12345' });
+  
+  // Login state
+  const [loginUsername, setLoginUsername] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [regUsername, setRegUsername] = useState('');
+  const [regPassword, setRegPassword] = useState('');
+  const [regPassword2, setRegPassword2] = useState('');
+  
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -66,69 +74,65 @@ export default function AssistenteIA() {
     }]);
   };
 
-  const handleLogin = (e) => {
-    e.preventDefault();
-    const username = e.target.username.value;
-    const password = e.target.password.value;
-
-    if (!username || !password) {
+  const handleLogin = () => {
+    if (!loginUsername || !loginPassword) {
       alert('❌ Preencha todos os campos!');
       return;
     }
 
-    if (!users[username]) {
+    if (!users[loginUsername]) {
       alert('❌ Usuário não encontrado!');
       return;
     }
 
-    if (users[username] !== password) {
+    if (users[loginUsername] !== loginPassword) {
       alert('❌ Senha incorreta!');
       return;
     }
 
-    setCurrentUser({ name: username, isAdmin: username === 'admin' });
+    setCurrentUser({ name: loginUsername, isAdmin: loginUsername === 'admin' });
     setIsLoggedIn(true);
     setMessages([{ 
-      text: `🎉 Bem-vindo, ${username}! Como posso ajudar hoje?`, 
+      text: `🎉 Bem-vindo, ${loginUsername}! Como posso ajudar hoje?`, 
       isUser: false, 
       id: Date.now() 
     }]);
+    setLoginUsername('');
+    setLoginPassword('');
   };
 
-  const handleRegister = (e) => {
-    e.preventDefault();
-    const username = e.target.regUsername.value;
-    const password = e.target.regPassword.value;
-    const password2 = e.target.regPassword2.value;
-
-    if (!username || !password || !password2) {
+  const handleRegister = () => {
+    if (!regUsername || !regPassword || !regPassword2) {
       alert('❌ Preencha todos os campos!');
       return;
     }
 
-    if (username.length < 3) {
+    if (regUsername.length < 3) {
       alert('❌ Usuário deve ter no mínimo 3 caracteres!');
       return;
     }
 
-    if (password.length < 4) {
+    if (regPassword.length < 4) {
       alert('❌ Senha deve ter no mínimo 4 caracteres!');
       return;
     }
 
-    if (password !== password2) {
+    if (regPassword !== regPassword2) {
       alert('❌ As senhas não coincidem!');
       return;
     }
 
-    if (users[username]) {
+    if (users[regUsername]) {
       alert('❌ Usuário já existe!');
       return;
     }
 
-    setUsers(prev => ({ ...prev, [username]: password }));
+    setUsers(prev => ({ ...prev, [regUsername]: regPassword }));
     alert('✅ Cadastro realizado! Faça login agora.');
     setShowRegister(false);
+    setRegUsername('');
+    setRegPassword('');
+    setRegPassword2('');
   };
 
   const processLocalResponse = (text) => {
@@ -187,7 +191,6 @@ export default function AssistenteIA() {
       if (t.includes('calculadora')) {
         return `💻 Aqui está uma CALCULADORA em Python:
 
-\`\`\`python
 def calculadora():
     num1 = float(input("Primeiro número: "))
     op = input("Operação (+, -, *, /): ")
@@ -196,23 +199,55 @@ def calculadora():
     if op == '+': resultado = num1 + num2
     elif op == '-': resultado = num1 - num2
     elif op == '*': resultado = num1 * num2
-    elif op == '/': resultado = num1 / num2 if num2 != 0 else "Erro!"
+    elif op == '/': resultado = num1 / num2
     
     print(f"Resultado: {resultado}")
-\`\`\`
 
 🔥 Pronto para usar! 🚀`;
       }
-
-      return `💻 Posso programar em:
-🐍 Python - "programa uma calculadora"
-📱 JavaScript - "código de jogo"
-🌐 HTML/CSS - "cria um site"
-
-Pede aí que eu codifico! 🚀`;
     }
 
-    return '🤖 Sou um assistente virtual! Posso ajudar com:\n• Hora e data\n• Cálculos matemáticos\n• Piadas e histórias\n• Programação\n• E muito mais!\n\n💡 Experimente: "que horas são?" ou "10 + 5"';
+    // Retorna null para indicar que deve usar a IA
+    return null;
+  };
+
+  const callGeminiAPI = async (text) => {
+    try {
+      const GEMINI_KEY = 'AIzaSyAyIIBj2Kf3SRrlhXbNXB_9b11pSSttHB4';
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_KEY}`;
+      
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contents: [{
+            parts: [{
+              text: `Responda em português brasileiro de forma amigável, clara e resumida (máximo 200 palavras): ${text}`
+            }]
+          }],
+          generationConfig: {
+            temperature: 0.7,
+            maxOutputTokens: 500,
+            topP: 0.8,
+            topK: 40
+          }
+        })
+      });
+
+      const data = await response.json();
+      
+      if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+        return data.candidates[0].content.parts[0].text;
+      }
+      
+      throw new Error('API falhou');
+      
+    } catch (error) {
+      console.error('Erro na API Gemini:', error);
+      return processLocalResponse(text);
+    }
   };
 
   const sendMessage = async () => {
@@ -223,11 +258,21 @@ Pede aí que eu codifico! 🚀`;
     addMessage(userMessage, true);
     setLoading(true);
 
-    setTimeout(() => {
-      const response = processLocalResponse(userMessage);
-      addMessage(response, false);
+    // Tenta resposta local primeiro (cálculos, hora, piadas, etc)
+    const localResponse = processLocalResponse(userMessage);
+    
+    // Se tiver resposta local, usa ela
+    if (localResponse) {
+      setTimeout(() => {
+        addMessage(localResponse, false);
+        setLoading(false);
+      }, 500);
+    } else {
+      // Caso contrário, chama a API do Gemini
+      const aiResponse = await callGeminiAPI(userMessage);
+      addMessage(aiResponse, false);
       setLoading(false);
-    }, 800);
+    }
   };
 
   const quickAction = (action) => {
@@ -287,21 +332,25 @@ Pede aí que eu codifico! 🚀`;
           </div>
 
           {!showRegister ? (
-            <form onSubmit={handleLogin} className="space-y-4">
+            <div className="space-y-4">
               <input
-                name="username"
+                value={loginUsername}
+                onChange={(e) => setLoginUsername(e.target.value)}
                 type="text"
                 placeholder="Usuário"
                 className="w-full px-4 py-3 rounded-xl bg-slate-900 border-2 border-blue-500 text-slate-200 focus:border-blue-400 focus:outline-none"
+                onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
               />
               <input
-                name="password"
+                value={loginPassword}
+                onChange={(e) => setLoginPassword(e.target.value)}
                 type="password"
                 placeholder="Senha"
                 className="w-full px-4 py-3 rounded-xl bg-slate-900 border-2 border-blue-500 text-slate-200 focus:border-blue-400 focus:outline-none"
+                onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
               />
               <button
-                type="submit"
+                onClick={handleLogin}
                 className="w-full bg-gradient-to-r from-blue-600 to-blue-500 text-white py-3 rounded-xl font-semibold hover:from-blue-500 hover:to-blue-400 transition-all"
               >
                 Entrar
@@ -314,29 +363,33 @@ Pede aí que eu codifico! 🚀`;
                   Não tem conta? Cadastre-se
                 </span>
               </p>
-            </form>
+            </div>
           ) : (
-            <form onSubmit={handleRegister} className="space-y-4">
+            <div className="space-y-4">
               <input
-                name="regUsername"
+                value={regUsername}
+                onChange={(e) => setRegUsername(e.target.value)}
                 type="text"
                 placeholder="Escolha um usuário"
                 className="w-full px-4 py-3 rounded-xl bg-slate-900 border-2 border-blue-500 text-slate-200 focus:border-blue-400 focus:outline-none"
               />
               <input
-                name="regPassword"
+                value={regPassword}
+                onChange={(e) => setRegPassword(e.target.value)}
                 type="password"
                 placeholder="Escolha uma senha"
                 className="w-full px-4 py-3 rounded-xl bg-slate-900 border-2 border-blue-500 text-slate-200 focus:border-blue-400 focus:outline-none"
               />
               <input
-                name="regPassword2"
+                value={regPassword2}
+                onChange={(e) => setRegPassword2(e.target.value)}
                 type="password"
                 placeholder="Confirme a senha"
                 className="w-full px-4 py-3 rounded-xl bg-slate-900 border-2 border-blue-500 text-slate-200 focus:border-blue-400 focus:outline-none"
+                onKeyPress={(e) => e.key === 'Enter' && handleRegister()}
               />
               <button
-                type="submit"
+                onClick={handleRegister}
                 className="w-full bg-gradient-to-r from-blue-600 to-blue-500 text-white py-3 rounded-xl font-semibold hover:from-blue-500 hover:to-blue-400 transition-all"
               >
                 Cadastrar
@@ -349,7 +402,7 @@ Pede aí que eu codifico! 🚀`;
                   Já tem conta? Faça login
                 </span>
               </p>
-            </form>
+            </div>
           )}
         </div>
       </div>
@@ -477,12 +530,12 @@ Pede aí que eu codifico! 🚀`;
 
       {/* Admin Panel */}
       {showAdmin && currentUser?.isAdmin && (
-        <div className="fixed top-0 right-0 w-96 h-full bg-slate-800 border-l-2 border-blue-500 shadow-2xl p-6 overflow-y-auto animate-slideIn">
+        <div className="fixed top-0 right-0 w-96 h-full bg-slate-800 border-l-2 border-blue-500 shadow-2xl p-6 overflow-y-auto animate-slideIn z-50">
           <div className="flex justify-between items-center mb-6 pb-4 border-b-2 border-blue-500">
             <h2 className="text-2xl font-bold text-blue-400">📊 Painel Admin</h2>
             <button
               onClick={() => setShowAdmin(false)}
-              className="w-8 h-8 bg-red-500 rounded-full hover:bg-red-600 transition-all"
+              className="w-8 h-8 bg-red-500 rounded-full hover:bg-red-600 transition-all flex items-center justify-center"
             >
               ✕
             </button>
@@ -510,23 +563,6 @@ Pede aí que eu codifico! 🚀`;
           )}
         </div>
       )}
-
-      <style jsx>{`
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes slideIn {
-          from { transform: translateX(100%); }
-          to { transform: translateX(0); }
-        }
-        .animate-fadeIn {
-          animation: fadeIn 0.3s ease;
-        }
-        .animate-slideIn {
-          animation: slideIn 0.3s ease;
-        }
-      `}</style>
     </div>
   );
 }
