@@ -490,6 +490,44 @@ body {
 .logout-btn:hover {
   background: #dc2626;
 }
+
+.google-btn {
+  width: 100%;
+  padding: 15px;
+  border: 2px solid #4285f4;
+  border-radius: 10px;
+  background: white;
+  color: #4285f4;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 10px;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.google-btn:hover {
+  background: #4285f4;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(66, 133, 244, 0.4);
+}
+
+.google-user {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.google-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid #4285f4;
+}
 </style>
 </head>
 <body>
@@ -511,6 +549,12 @@ body {
   <div class="login-box">
     <h2>🔐 Login</h2>
     <p>Faça login para usar o assistente</p>
+    
+    <button class="google-btn" onclick="loginWithGoogle()">
+      <span style="font-size: 18px;">🔍</span> Entrar com Google
+    </button>
+    
+    <div style="margin: 20px 0; color: #64748b; font-size: 13px;">OU</div>
     
     <div id="loginForm">
       <input type="text" id="loginUser" placeholder="Usuário">
@@ -1147,14 +1191,50 @@ function doLogin() {
     return;
   }
   
+  loginSuccess(user, false);
+}
+
+function loginWithGoogle() {
+  // Simula login com Google (em produção real usaria Google OAuth)
+  const googleEmails = [
+    'usuario@gmail.com',
+    'admin@gmail.com',
+    'teste@gmail.com',
+    'seu.email@gmail.com'
+  ];
+  
+  const randomEmail = googleEmails[Math.floor(Math.random() * googleEmails.length)];
+  const username = randomEmail.split('@')[0];
+  
+  // Simula delay do Google
+  const btn = event.target;
+  btn.disabled = true;
+  btn.textContent = '🔄 Conectando com Google...';
+  
+  setTimeout(() => {
+    loginSuccess(username, true, randomEmail);
+  }, 1500);
+}
+
+function loginSuccess(user, isGoogle = false, email = null) {
   currentUser = user;
   loginOverlay.classList.add('hidden');
   userInfo.style.display = 'flex';
-  usernameDisplay.textContent = user;
   
-  // Mostra botão admin APENAS para o usuário "admin"
+  if (isGoogle && email) {
+    usernameDisplay.innerHTML = `
+      <div class="google-user">
+        <img class="google-avatar" src="https://ui-avatars.com/api/?name=${user}&background=4285f4&color=fff" alt="Avatar">
+        <span>${email}</span>
+      </div>
+    `;
+  } else {
+    usernameDisplay.textContent = user;
+  }
+  
+  // Mostra botão admin APENAS para o usuário "admin" ou emails @gmail.com específicos
   const adminBtn = document.querySelector('.admin-btn');
-  if (user === 'admin') {
+  if (user === 'admin' || email === 'admin@gmail.com') {
     adminBtn.style.display = 'block';
   } else {
     adminBtn.style.display = 'none';
